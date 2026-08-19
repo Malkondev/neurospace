@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroSpace | Caderno de Estudos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Menu Lateral -->
+        <nav class="sidebar">
+            <div class="logo-area">
+                <div class="brain-badge-small">🧠</div>
+                <span>NeuroSpace</span>
+            </div>
+            
+            <button class="nav-btn ativo" onclick="carregarPagina('inicio', this)">
+                <span class="icon">🏠</span> Início
+            </button>
+            <button class="nav-btn" onclick="carregarPagina('esbocos', this)">
+                <span class="icon">📝</span> Esboços
+            </button>
+            <button class="nav-btn" onclick="carregarPagina('obras', this)">
+                <span class="icon">📚</span> Obras
+            </button>
+            <button class="nav-btn" onclick="carregarPagina('analogias', this)">
+                <span class="icon">🔗</span> Analogias
+            </button>
+            <!-- NOVO BOTÃO AQUI -->
+            <button class="nav-btn" onclick="carregarPagina('personalidades', this)">
+                <span class="icon">🗿</span> Personalidades
+            </button>
+            <button class="nav-btn" onclick="carregarPagina('consideracoes', this)">
+                <span class="icon">💡</span> Considerações
+            </button>
+        </nav>
+
+        <!-- Área Principal Onde as Páginas Serão Injetadas -->
+        <main class="content-area">
+            <div id="app-content" class="fade-in">
+                <!-- O conteúdo das outras páginas vai aparecer aqui magicamente -->
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
