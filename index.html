@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroSpace - Meu Segundo Cérebro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Menu Lateral -->
+    <nav class="sidebar">
+        <div class="logo-area">
+            <div class="brain-badge-small">🧠</div>
+            <span>NeuroSpace</span>
+        </div>
+        
+        <button class="nav-btn ativo" onclick="carregarPagina('inicio', this)">
+            <span class="icon">🏠</span> Início
+        </button>
+        <button class="nav-btn" onclick="carregarPagina('esbocos', this)">
+            <span class="icon">📝</span> Esboços
+        </button>
+        <button class="nav-btn" onclick="carregarPagina('obras', this)">
+            <span class="icon">📚</span> Obras
+        </button>
+        <button class="nav-btn" onclick="carregarPagina('analogias', this)">
+            <span class="icon">🔗</span> Analogias
+        </button>
+        <button class="nav-btn" onclick="carregarPagina('personalidades', this)">
+            <span class="icon">🗿</span> Personalidades
+        </button>
+        <button class="nav-btn" onclick="carregarPagina('consideracoes', this)">
+            <span class="icon">💡</span> Considerações
+        </button>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <main id="conteudo-principal" class="main-content">
+        <!-- O conteúdo das páginas será injetado aqui pelo JavaScript -->
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
