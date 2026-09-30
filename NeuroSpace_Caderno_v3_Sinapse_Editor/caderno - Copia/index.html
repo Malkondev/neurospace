@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroSpace | Caderno de Estudos</title>
+    
+    <!-- Tipografia Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Importação dos 6 Ficheiros CSS Modulares -->
+    <link rel="stylesheet" href="style/style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Menu Lateral (Sidebar) -->
+        <nav class="sidebar" id="sidebar">
+            
+            <!-- Logótipo -->
+            <div class="logo-area">
+                <div class="brain-badge-small">🧠</div>
+                <span>NeuroSpace</span>
+            </div>
+
+            <!-- Alternador de Tema (Dark / Light) -->
+            <div class="hemisphere-toggle">
+                <span class="label-h">Escuro</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-tema" onchange="toggleTema()">
+                    <span class="slider round"></span>
+                </label>
+                <span class="label-h">Claro</span>
+            </div>
+
+            <!-- Botões de Navegação Principal -->
+            <div class="nav-buttons-container">
+                <div class="synapse-line"></div>
+                <div class="synapse-dot" id="synapse-dot"></div>
+
+                <button class="nav-btn ativo" data-page="inicio" onclick="carregarPagina('inicio', this)">
+                    <svg class="node-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg> 
+                    <span>Início</span>
+                </button>
+
+                <button class="nav-btn" data-page="esbocos" onclick="carregarPagina('esbocos', this)">
+                    <svg class="node-icon" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg> 
+                    <span>Esboços</span>
+                </button>
+
+                <button class="nav-btn" data-page="obras" onclick="carregarPagina('obras', this)">
+                    <svg class="node-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg> 
+                    <span>Obras</span>
+                </button>
+
+                <button class="nav-btn" data-page="analogias" onclick="carregarPagina('analogias', this)">
+                    <svg class="node-icon" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg> 
+                    <span>Analogias</span>
+                </button>
+
+                <button class="nav-btn" data-page="personalidades" onclick="carregarPagina('personalidades', this)">
+                    <svg class="node-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> 
+                    <span>Personalidades</span>
+                </button>
+            </div>
+
+            <!-- ÁREA AMARELA: Som & Memória -->
+            <div class="area-amarela-container">
+                <div class="binaural-widget">
+                    <span class="binaural-title">🎧 FREQUÊNCIA NEURAL</span>
+                    <select id="onda-selector" class="binaural-select">
+                        <option value="alpha">Ondas Alfa (Foco/Leitura)</option>
+                        <option value="beta">Ondas Beta (Lógica/Análise)</option>
+                    </select>
+                    <button id="btn-play-binaural" class="binaural-btn" onclick="toggleBinaural()">▶️ Iniciar</button>
+                </div>
+
+                <div class="memoria-recente">
+                    <span class="memoria-title">MEMÓRIA & RETENÇÃO</span>
+                    <div id="historico-tags" class="tags-container"></div>
+                </div>
+            </div>
+
+            <!-- ÁREA VERDE: Ferramentas -->
+            <div class="area-verde-container">
+                <span class="widget-title">🛠️ FERRAMENTAS</span>
+                <div class="ferramentas-grid">
+                    <button id="btn-foco" class="tool-btn-sidebar" onclick="toggleFoco()">🎯 Modo Foco</button>
+                    <button id="btn-bionic" class="tool-btn-sidebar" onclick="toggleBionic()">⚡ Leitura Biônica</button>
+                    <button id="btn-sinapse-trigger" class="tool-btn-sidebar" onclick="toggleSinapseDrawer()">📝 Sinapse Rápida</button>
+                </div>
+            </div>
+
+        </nav>
+
+        <!-- Caderno Digital (Área de Conteúdo) -->
+        <main class="content-area">
+            <div id="app-content" class="fade-in"></div>
+        </main>
+    </div>
+
+    <!-- Botão de saída do Modo Foco -->
+    <button id="btn-sair-foco" class="btn-sair-foco" onclick="toggleFoco()" aria-label="Sair do Modo Foco">
+        ✕ <span>Sair do foco</span>
+    </button>
+
+    <!-- SINAPSE RÁPIDA: editor flutuante e expansível -->
+    <div id="sinapse-drawer" class="sinapse-rapida-drawer" aria-label="Sinapse Rápida">
+        <div class="drawer-header" id="sinapse-drag-handle" title="Arraste para mover a Sinapse Rápida">
+            <h3>✦ Sinapse Rápida</h3>
+            <span class="sinapse-drag-hint">⋮⋮ arrastar</span>
+            <div class="sinapse-header-actions">
+                <button id="btn-expandir-sinapse" class="sinapse-icon-btn" type="button" onclick="toggleSinapseExpandida()" aria-label="Expandir editor" title="Tela cheia — Ctrl + Shift + Enter">
+                    <span aria-hidden="true">⛶</span>
+                </button>
+                <button id="btn-fechar-drawer" class="btn-fechar-drawer" type="button" onclick="toggleSinapseDrawer()" aria-label="Fechar Sinapse Rápida" title="Fechar — Esc">✕</button>
+            </div>
+        </div>
+
+        <p class="sinapse-description">Anotações instantâneas. Salvas automaticamente.</p>
+
+        <div class="sinapse-toolbar" id="sinapse-toolbar" aria-label="Ferramentas de edição">
+            <button class="sinapse-tool" type="button" data-command="undo" title="Desfazer — Ctrl + Z">↶<span class="sinapse-shortcut">Ctrl Z</span></button>
+            <button class="sinapse-tool" type="button" data-command="redo" title="Refazer — Ctrl + Y">↷<span class="sinapse-shortcut">Ctrl Y</span></button>
+            <span class="sinapse-divider"></span>
+            <button class="sinapse-tool" type="button" data-command="bold" title="Negrito — Ctrl + B"><b>B</b><span class="sinapse-shortcut">Ctrl B</span></button>
+            <button class="sinapse-tool" type="button" data-command="italic" title="Itálico — Ctrl + I"><i>I</i><span class="sinapse-shortcut">Ctrl I</span></button>
+            <button class="sinapse-tool" type="button" data-command="underline" title="Sublinhado — Ctrl + U"><u>U</u><span class="sinapse-shortcut">Ctrl U</span></button>
+            <button class="sinapse-tool" type="button" data-command="strikeThrough" title="Tachado — Alt + Shift + 5"><s>S</s></button>
+            <span class="sinapse-divider"></span>
+            <select class="sinapse-select" id="sinapse-format" title="Estilo do texto — Ctrl + Alt + 1/2/3">
+                <option value="p">Parágrafo</option>
+                <option value="h1">Título 1</option>
+                <option value="h2">Título 2</option>
+                <option value="h3">Título 3</option>
+                <option value="blockquote">Citação</option>
+            </select>
+            <select class="sinapse-select" id="sinapse-font-size" title="Tamanho da fonte">
+                <option value="3">Normal</option>
+                <option value="2">Pequena</option>
+                <option value="4">Grande</option>
+                <option value="5">Muito grande</option>
+                <option value="6">Título</option>
+            </select>
+            <span class="sinapse-divider"></span>
+            <button class="sinapse-tool" type="button" data-command="justifyLeft" title="Alinhar à esquerda — Ctrl + Shift + L">≡<span class="sinapse-shortcut">Ctrl ⇧ L</span></button>
+            <button class="sinapse-tool" type="button" data-command="justifyCenter" title="Centralizar — Ctrl + Shift + E">≡<span class="sinapse-shortcut">Ctrl ⇧ E</span></button>
+            <button class="sinapse-tool" type="button" data-command="justifyRight" title="Alinhar à direita — Ctrl + Shift + R">≡<span class="sinapse-shortcut">Ctrl ⇧ R</span></button>
+            <span class="sinapse-divider"></span>
+            <button class="sinapse-tool" type="button" data-command="insertUnorderedList" title="Lista com marcadores — Ctrl + Shift + 8">•☷</button>
+            <button class="sinapse-tool" type="button" data-command="insertOrderedList" title="Lista numerada">1☷</button>
+            <button class="sinapse-tool" type="button" data-command="removeFormat" title="Limpar formatação">Tx</button>
+        </div>
+
+        <div class="sinapse-editor-wrap">
+            <div id="sinapse-notas" class="notes-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Digite suas ideias ou rascunhos aqui..."></div>
+        </div>
+
+        <div class="sinapse-footer">
+            <span id="status-sync" class="sinapse-status">Status: Sincronizado</span>
+            <button id="btn-limpar-notas" class="sinapse-clear" type="button" onclick="limparNotasSinapse()">Limpar</button>
+        </div>
+    </div>
+
+    <!-- Ficheiro de Lógica Principal -->
+    <script src="script.js"></script>
+
+</body>
+</html>

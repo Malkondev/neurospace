@@ -1,0 +1,329 @@
+/* =========================================================
+   2-LAYOUT.CSS - Estrutura Principal e Caderno Central
+   ========================================================= */
+
+/* Contentor Principal da Aplicação */
+.app-container {
+    display: flex;
+    gap: 30px;
+    width: 100%;
+    max-width: 1440px;
+    height: 92vh;
+    padding: 30px 40px; /* Aumentámos o padding lateral para 40px */
+    position: relative;
+    align-items: stretch;
+}
+/* Coluna Esquerda: Barra Lateral (Bloco Azul do Esboço) */
+.sidebar {
+    width: 300px;
+    min-width: 300px;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Área Central: O Caderno Digital (Bloco Central do Esboço) */
+.content-area {
+    flex: 1;
+    height: 100%;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 35px 40px;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* O conteúdo central não precisa de uma aba decorativa sobreposta. */
+
+/* Conteúdo Dinâmico Interno */
+#app-content {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Cabeçalhos dos Capítulos */
+.capitulo-header {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.capitulo-header h1 {
+    font-size: 32px;
+    color: var(--text-main);
+    margin-bottom: 6px;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Cabeçalho com Capa de Livro / Imagem */
+.header-com-imagem {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.header-fonte-img img {
+    width: 65px;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* =========================================================
+   CONTEÚDO DA PÁGINA INICIAL
+   ========================================================= */
+.inicio-projeto {
+    width: 100%;
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 8px 4px 28px;
+}
+
+.inicio-hero {
+    position: relative;
+    padding: 34px 0 28px;
+    overflow: hidden;
+}
+
+.inicio-hero::after {
+    content: "";
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    right: -80px;
+    top: -100px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(59,130,246,.16), transparent 68%);
+    pointer-events: none;
+}
+
+.inicio-kicker,
+.inicio-label {
+    display: inline-block;
+    color: var(--primary);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+}
+
+.inicio-hero h1 {
+    margin-top: 14px;
+    font-size: clamp(38px, 5vw, 64px);
+    line-height: .98;
+    letter-spacing: -0.055em;
+    max-width: 800px;
+}
+
+.inicio-hero h1 span {
+    color: var(--text-muted);
+}
+
+.inicio-lead {
+    max-width: 720px;
+    margin-top: 24px;
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--text-muted);
+}
+
+.inicio-divisor {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 4px 0 34px;
+}
+
+.inicio-divisor::before {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border-subtle);
+}
+
+.inicio-divisor span {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 0 9px var(--primary);
+}
+
+.inicio-intro {
+    display: grid;
+    grid-template-columns: minmax(240px, .8fr) minmax(280px, 1.2fr);
+    gap: 55px;
+    align-items: start;
+    margin-bottom: 32px;
+}
+
+.inicio-intro h2 {
+    margin-top: 10px;
+    max-width: 410px;
+    font-size: clamp(22px, 3vw, 31px);
+    line-height: 1.15;
+}
+
+.inicio-intro p {
+    max-width: 620px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.inicio-pilares {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.inicio-pilar {
+    position: relative;
+    min-height: 178px;
+    padding: 18px;
+    text-align: left;
+    color: var(--text-main);
+    background: linear-gradient(145deg, rgba(30,41,59,.9), rgba(15,23,42,.72));
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform .45s cubic-bezier(.2,.8,.2,1), border-color .35s ease, box-shadow .45s ease, background .35s ease;
+}
+
+.inicio-pilar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 20%, rgba(59,130,246,.09), transparent 80%);
+    transform: translateX(-100%);
+    transition: transform .65s cubic-bezier(.2,.8,.2,1);
+}
+
+.inicio-pilar:hover {
+    transform: translateY(-5px);
+    border-color: rgba(59,130,246,.45);
+    box-shadow: 0 18px 35px rgba(0,0,0,.25), 0 0 0 1px rgba(59,130,246,.06);
+}
+
+.inicio-pilar:hover::before { transform: translateX(100%); }
+
+.pilar-numero {
+    display: block;
+    color: var(--primary);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.pilar-titulo {
+    display: block;
+    margin-top: 26px;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.pilar-desc {
+    display: block;
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.pilar-seta {
+    position: absolute;
+    right: 16px;
+    bottom: 14px;
+    color: var(--primary);
+    font-size: 18px;
+    transition: transform .35s ease;
+}
+
+.inicio-pilar:hover .pilar-seta { transform: translateX(4px); }
+
+.inicio-fecho {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 30px;
+    color: var(--text-muted);
+}
+
+.inicio-fecho p { font-size: 11px; }
+
+.inicio-ponto {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    box-shadow: 0 0 10px rgba(16,185,129,.7);
+}
+
+/* Grelha dos conteúdos em cartões */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+    align-items: stretch;
+}
+
+/* Limite para imagens de obras/capítulos na área central */
+.content-area img {
+    max-width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    object-position: top;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Estado de pensamento ainda não escrito */
+.pensamento-vazio {
+    max-width: 620px;
+    margin: 45px auto;
+    padding: 38px 30px;
+    text-align: center;
+    border: 1px dashed var(--border-color);
+    border-radius: 18px;
+    background: rgba(15, 23, 42, .28);
+}
+
+.pensamento-vazio-icon {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--primary);
+    font-size: 28px;
+    opacity: .8;
+}
+
+.pensamento-vazio h2 { font-size: 20px; }
+.pensamento-vazio p { margin-top: 8px; color: var(--text-muted); font-size: 13px; }
+
+@media (max-width: 900px) {
+    .inicio-pilares { grid-template-columns: repeat(2, 1fr); }
+    .inicio-intro { grid-template-columns: 1fr; gap: 16px; }
+}
+
+@media (max-width: 620px) {
+    .inicio-pilares { grid-template-columns: 1fr; }
+    .inicio-hero h1 { font-size: 40px; }
+}

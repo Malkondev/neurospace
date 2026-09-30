@@ -1,0 +1,224 @@
+/* =========================================================
+   5-TOOLS.CSS - Ferramentas Interativas (Flashcards, Quiz, Simulador e Lab)
+   ========================================================= */
+
+/* Contentor Geral de Ferramentas Interativas */
+.tool-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 25px;
+    margin-top: 15px;
+}
+
+/* ---------------------------------------------------------
+   1. FLASHCARDS INTERATIVOS (Repetição Espaçada)
+   --------------------------------------------------------- */
+.flashcard-wrapper {
+    perspective: 1000px;
+    width: 100%;
+    max-width: 520px;
+    height: 280px;
+    margin: 0 auto 20px auto;
+}
+
+.flashcard {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.flashcard.virado {
+    transform: rotateY(180deg);
+}
+
+.flashcard-front, .flashcard-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 20px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.flashcard-front {
+    background: var(--card-bg);
+    color: var(--text-main);
+}
+
+.flashcard-back {
+    background: #0f172a;
+    color: var(--text-main);
+    transform: rotateY(180deg);
+    border-color: var(--primary);
+}
+
+.flashcard-tag {
+    position: absolute;
+    top: 18px;
+    left: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--accent-yellow);
+}
+
+.flashcard-controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.btn-repeticao {
+    padding: 10px 18px;
+    border-radius: 12px;
+    border: none;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-repeticao.dificil { 
+    background: rgba(239, 68, 68, 0.2); 
+    color: #f87171; 
+    border: 1px solid rgba(239, 68, 68, 0.4); 
+}
+
+.btn-repeticao.bom { 
+    background: rgba(245, 158, 11, 0.2); 
+    color: #fbbf24; 
+    border: 1px solid rgba(245, 158, 11, 0.4); 
+}
+
+.btn-repeticao.facil { 
+    background: rgba(16, 185, 129, 0.2); 
+    color: #34d399; 
+    border: 1px solid rgba(16, 185, 129, 0.4); 
+}
+
+.btn-repeticao:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.2);
+}
+
+/* ---------------------------------------------------------
+   2. QUIZ E AVALIAÇÕES NEURAIS
+   --------------------------------------------------------- */
+.quiz-question-box {
+    margin-bottom: 20px;
+}
+
+.quiz-question-text {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: var(--text-main);
+}
+
+.quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.quiz-option-btn {
+    width: 100%;
+    padding: 14px 18px;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-main);
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.quiz-option-btn:hover {
+    border-color: var(--primary);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.quiz-option-btn.correta {
+    background: rgba(16, 185, 129, 0.2) !important;
+    border-color: var(--accent-green) !important;
+    color: #34d399 !important;
+}
+
+.quiz-option-btn.incorreta {
+    background: rgba(239, 68, 68, 0.2) !important;
+    border-color: #ef4444 !important;
+    color: #f87171 !important;
+}
+
+/* ---------------------------------------------------------
+   3. SIMULADOR NEURAL E LABORATÓRIO
+   --------------------------------------------------------- */
+.simulador-canvas-container {
+    width: 100%;
+    height: 320px;
+    background: #050811;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.simulador-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 14px;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.control-group label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.control-group input[type="range"] {
+    width: 100%;
+    accent-color: var(--primary);
+}
+
+.metric-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+}
