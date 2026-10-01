@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroSpace | Caderno de Estudos</title>
+    <title>NeuroSpace 7.0 | Caderno de Estudos</title>
     
     <!-- Tipografia Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -20,7 +20,7 @@
             <!-- Logótipo -->
             <div class="logo-area">
                 <div class="brain-badge-small">🧠</div>
-                <span>NeuroSpace</span>
+                <span>NeuroSpace <small class="logo-version">7.0</small></span>
             </div>
 
             <!-- Alternador de Tema (Dark / Light) -->
@@ -61,6 +61,17 @@
                 <button class="nav-btn" data-page="personalidades" onclick="carregarPagina('personalidades', this)">
                     <svg class="node-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> 
                     <span>Personalidades</span>
+                </button>
+
+                <div class="nav-separator-label">EXPLORAÇÃO</div>
+
+                <button class="nav-btn" data-page="painel" onclick="carregarPagina('painel', this)">
+                    <svg class="node-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+                    <span>Painel</span>
+                </button>
+                <button class="nav-btn" data-page="constelacao" onclick="carregarPagina('constelacao', this)">
+                    <svg class="node-icon" viewBox="0 0 24 24"><circle cx="5" cy="5" r="2"></circle><circle cx="19" cy="7" r="2"></circle><circle cx="12" cy="18" r="2"></circle><path d="M6.8 6.1l10.4.8M17.8 8.7l-4.6 7.5M10.3 16.8l-3.8-9.7"></path></svg>
+                    <span>Constelação</span>
                 </button>
             </div>
 
@@ -110,6 +121,12 @@
             <h3>✦ Sinapse Rápida</h3>
             <span class="sinapse-drag-hint">⋮⋮ arrastar</span>
             <div class="sinapse-header-actions">
+                <button id="btn-voz-sinapse" class="sinapse-icon-btn sinapse-voice-btn" type="button" onclick="togglePenseAlto()" aria-label="Pense-Alto: iniciar transcrição de voz" title="Pense-Alto — transcrição de voz">
+                    <span aria-hidden="true">🎙</span>
+                </button>
+                <button id="btn-oroboros" class="sinapse-icon-btn oroboros-trigger" type="button" onclick="abrirOroboros()" aria-label="Abrir Oroboros" title="Oroboros — organizar texto em HTML">
+                    <span aria-hidden="true">✦</span>
+                </button>
                 <button id="btn-expandir-sinapse" class="sinapse-icon-btn" type="button" onclick="toggleSinapseExpandida()" aria-label="Expandir editor" title="Tela cheia — Ctrl + Shift + Enter">
                     <span aria-hidden="true">⛶</span>
                 </button>
@@ -135,7 +152,7 @@
                 <option value="h3">Título 3</option>
                 <option value="blockquote">Citação</option>
             </select>
-            <select class="sinapse-select" id="sinapse-font-size" title="Tamanho da fonte">
+            <button class="sinapse-tool" type="button" data-command="fontSize" data-value="4" title="Aumentar fonte — Ctrl + =">A+</button><button class="sinapse-tool" type="button" data-command="fontSize" data-value="2" title="Diminuir fonte — Ctrl + -">A−</button><select class="sinapse-select" id="sinapse-font-size" title="Tamanho da fonte">
                 <option value="3">Normal</option>
                 <option value="2">Pequena</option>
                 <option value="4">Grande</option>
@@ -157,11 +174,50 @@
         </div>
 
         <div class="sinapse-footer">
-            <span id="status-sync" class="sinapse-status">Status: Sincronizado</span>
+            <span id="status-sync" class="sinapse-status">Status: Sincronizado</span><span id="sinapse-word-count" class="sinapse-word-count">0 palavras</span>
             <button id="btn-limpar-notas" class="sinapse-clear" type="button" onclick="limparNotasSinapse()">Limpar</button>
         </div>
     </div>
 
+    <!-- OROBOROS — editor inteligente do NeuroSpace -->
+    <div id="oroboros-modal" class="oroboros-modal" aria-hidden="true">
+        <div class="oroboros-backdrop" onclick="fecharOroboros()"></div>
+        <section class="oroboros-panel" role="dialog" aria-modal="true" aria-labelledby="oroboros-title">
+            <header class="oroboros-header">
+                <div>
+                    <span class="oroboros-kicker">EDITOR COGNITIVO · NEUROSPACE 7.0</span>
+                    <h2 id="oroboros-title">✦ Oroboros</h2>
+                    <p>Organiza o que você escreveu sem inventar o que você não disse.</p>
+                </div>
+                <button class="oroboros-close" type="button" onclick="fecharOroboros()" aria-label="Fechar Oroboros">✕</button>
+            </header>
+
+            <div class="oroboros-grid">
+                <div class="oroboros-column">
+                    <div class="oroboros-label-row"><label for="oroboros-input">Texto bruto</label><span id="oroboros-input-count">0 palavras</span></div>
+                    <textarea id="oroboros-input" class="oroboros-input" placeholder="Escreva ou dite suas ideias aqui...
+
+Exemplo: Hoje pensei sobre como a percepção muda a maneira como interpretamos a realidade."></textarea>
+                </div>
+                <div class="oroboros-column">
+                    <div class="oroboros-label-row"><span>HTML organizado</span><span id="oroboros-status">Aguardando</span></div>
+                    <div id="oroboros-preview" class="oroboros-preview" aria-live="polite"><span class="oroboros-empty">O resultado aparecerá aqui.</span></div>
+                </div>
+            </div>
+
+            <div class="oroboros-controls">
+                <div class="oroboros-rule">Preservar pensamento · estruturar · não inventar</div>
+                <div class="oroboros-actions">
+                    <button class="oroboros-btn secondary" type="button" onclick="usarTextoDaSinapseNoOroboros()">↙ Usar Sinapse</button>
+                    <button id="btn-oroboros-gerar" class="oroboros-btn primary" type="button" onclick="executarOroboros()">✦ Organizar com Oroboros</button>
+                    <button id="btn-oroboros-aplicar" class="oroboros-btn apply" type="button" onclick="aplicarOroboros()" disabled>✓ Aplicar à Sinapse</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Configuração do Oroboros (não contém chave de API) -->
+    <script src="oroboros-config.js"></script>
     <!-- Ficheiro de Lógica Principal -->
     <script src="script.js"></script>
 

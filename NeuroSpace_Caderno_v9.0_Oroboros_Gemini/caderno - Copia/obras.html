@@ -1,0 +1,23 @@
+<header class="capitulo-header">
+    <h1>Análise de Obras</h1>
+    <p class="subtitle">Livros, filmes e mídias dissecados pela ótica da neurociência.</p>
+</header>
+
+<div class="library-toolbar">
+    <input id="obras-search" class="library-search" placeholder="Buscar obra..." oninput="filtrarBiblioteca('obras-search','obra-card','obras-empty')">
+    <span id="obras-search-count" class="library-count"></span>
+</div>
+
+<div class="card-grid" id="obras-grid">
+    <div class="card obra-card" data-name="o homem sem nome por um punhado de dólares" onclick="carregarPagina('homem-sem-nome')">
+        <div class="card-img-container">
+            <img src="assets/por-um-punhado-de-dolares.jpg" alt="Por um Punhado de Dólares">
+        </div>
+        <div class="card-content">
+            <h3 class="card-title">O homem sem nome e o julgamento dos covardes</h3>
+            <div class="card-meta">Por um Punhado de Dólares (Filme)</div>
+            <p class="card-desc">Ainda não está feito.</p>
+        </div>
+    </div>
+    <div class="library-empty" id="obras-empty" hidden>Nenhuma obra encontrada.</div>
+</div>

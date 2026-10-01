@@ -327,3 +327,111 @@
     .inicio-pilares { grid-template-columns: 1fr; }
     .inicio-hero h1 { font-size: 40px; }
 }
+
+
+/* =========================================================
+   NEUROSPACE 7.0 — EXPERIÊNCIA MOBILE
+   ========================================================= */
+@media (max-width: 768px) {
+    body {
+        display: block;
+        min-height: 100dvh;
+    }
+
+    .app-container {
+        width: 100%;
+        max-width: none;
+        min-height: 100dvh;
+        padding: max(8px, env(safe-area-inset-top)) 8px max(12px, env(safe-area-inset-bottom));
+        gap: 10px;
+        align-items: stretch;
+    }
+
+    .content-area {
+        width: 100%;
+        min-width: 0;
+        height: auto;
+        min-height: calc(100dvh - 190px);
+        padding: 24px 16px;
+        border-radius: 17px;
+        overflow: visible;
+    }
+
+    .capitulo-header {
+        margin-bottom: 20px;
+        padding-bottom: 13px;
+    }
+
+    .capitulo-header h1 {
+        font-size: clamp(25px, 7vw, 34px);
+        line-height: 1.08;
+        overflow-wrap: anywhere;
+    }
+
+    .subtitle {
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .header-com-imagem {
+        gap: 12px;
+    }
+
+    #app-content {
+        width: 100%;
+        min-width: 0;
+    }
+
+    /* Evita que tabelas, imagens e blocos largos quebrem a tela. */
+    #app-content img,
+    #app-content video,
+    #app-content iframe,
+    #app-content table {
+        max-width: 100%;
+    }
+
+    #app-content table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #app-content pre,
+    #app-content code {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    #app-content button,
+    #app-content input,
+    #app-content select,
+    #app-content textarea,
+    #app-content a {
+        touch-action: manipulation;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-area {
+        padding: 21px 13px;
+        border-radius: 15px;
+    }
+
+    .inicio-projeto {
+        padding: 2px 0 20px;
+    }
+
+    .inicio-hero {
+        padding: 22px 0 20px;
+    }
+
+    .inicio-hero h1 {
+        font-size: clamp(34px, 12vw, 43px);
+    }
+
+    .inicio-lead {
+        margin-top: 17px;
+        font-size: 14px;
+        line-height: 1.7;
+    }
+}

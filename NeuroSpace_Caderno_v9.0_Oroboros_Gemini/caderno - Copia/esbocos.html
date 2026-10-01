@@ -1,0 +1,23 @@
+<header class="capitulo-header">
+    <h1>Esboços Estudados</h1>
+    <p class="subtitle">Seus diagramas, vias neurais e anotações visuais.</p>
+</header>
+
+<div class="library-toolbar">
+    <input id="esbocos-search" class="library-search" placeholder="Buscar esboço..." oninput="filtrarBiblioteca('esbocos-search','esboco-card','esbocos-empty')">
+    <span id="esbocos-search-count" class="library-count"></span>
+</div>
+
+<div class="card-grid" id="esbocos-grid">
+    <div class="card esboco-card" data-name="percepção processamento cognitivo" onclick="carregarPagina('percepcao')">
+        <div class="card-img-container">
+            <img src="assets/percepcao.png" alt="Esboço de Percepção Visual">
+        </div>
+        <div class="card-content">
+            <h3 class="card-title">Percepção</h3>
+            <div class="card-meta">Processamento Cognitivo</div>
+            <p class="card-desc">Como o cérebro interpreta estímulos sensoriais de forma subjetiva, dependendo do referencial.</p>
+        </div>
+    </div>
+    <div class="library-empty" id="esbocos-empty" hidden>Nenhum esboço encontrado.</div>
+</div>

@@ -325,3 +325,186 @@ input:checked + .slider:before {
     color: white !important;
     border-color: var(--primary) !important;
 }
+
+/* =========================================================
+   NEUROSPACE 7.0 — AJUSTES DE NAVEGAÇÃO MOBILE
+   ========================================================= */
+.logo-version {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 5px;
+    padding: 2px 6px;
+    border: 1px solid rgba(59,130,246,.28);
+    border-radius: 6px;
+    color: var(--primary);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: sticky;
+        top: max(8px, env(safe-area-inset-top));
+        z-index: 100;
+        width: 100%;
+        min-width: 0;
+        padding: 11px;
+        gap: 10px;
+        border-radius: 18px;
+        box-shadow: 0 12px 28px rgba(0,0,0,.24);
+    }
+
+    .logo-area {
+        padding: 2px 4px;
+        margin: 0;
+        min-height: 38px;
+    }
+
+    .brain-badge-small {
+        font-size: 19px;
+        padding: 3px 7px;
+        border-radius: 9px;
+    }
+
+    .logo-area span {
+        font-size: 16px;
+    }
+
+    .hemisphere-toggle {
+        min-height: 42px;
+        padding: 7px 10px;
+        border-radius: 11px;
+    }
+
+    .nav-buttons-container {
+        flex-direction: row;
+        align-items: stretch;
+        gap: 7px;
+        margin: 0;
+        padding: 2px 1px 5px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x proximity;
+    }
+
+    .nav-buttons-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .synapse-line,
+    .synapse-dot {
+        display: none;
+    }
+
+    .nav-btn,
+    .nav-separator-label {
+        flex: 0 0 auto;
+        scroll-snap-align: start;
+    }
+
+    .nav-btn {
+        min-height: 44px;
+        padding: 9px 13px;
+        gap: 8px;
+        border-radius: 11px;
+        font-size: 12px;
+        white-space: nowrap;
+        text-align: center;
+    }
+
+    .node-icon {
+        width: 17px;
+        height: 17px;
+    }
+
+    .nav-separator-label {
+        display: flex;
+        align-items: center;
+        margin: 0 1px;
+        padding: 0 4px;
+        color: var(--text-muted);
+        font-size: 8px;
+        letter-spacing: .12em;
+        white-space: nowrap;
+    }
+
+    .area-amarela-container,
+    .area-verde-container {
+        margin: 0;
+        padding: 10px;
+        border-radius: 13px;
+    }
+
+    .area-amarela-container {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(120px, .8fr);
+        gap: 10px;
+    }
+
+    .binaural-widget,
+    .memoria-recente {
+        min-width: 0;
+    }
+
+    .binaural-select,
+    .binaural-btn {
+        min-height: 40px;
+    }
+
+    .tags-container {
+        max-height: 72px;
+        overflow-y: auto;
+        align-content: flex-start;
+    }
+
+    .area-verde-container {
+        gap: 7px;
+    }
+
+    .ferramentas-grid {
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 7px;
+        padding-bottom: 1px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .ferramentas-grid::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tool-btn-sidebar {
+        width: auto;
+        min-width: max-content;
+        min-height: 42px;
+        padding: 9px 12px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar {
+        padding: 9px;
+        gap: 8px;
+        border-radius: 16px;
+    }
+
+    .area-amarela-container {
+        grid-template-columns: 1fr;
+    }
+
+    .memoria-recente {
+        display: none;
+    }
+
+    .nav-btn {
+        min-height: 43px;
+        padding: 8px 12px;
+    }
+}

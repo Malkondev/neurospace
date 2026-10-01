@@ -1,0 +1,5 @@
+{
+  "functions": {
+    "api/oroboros.js": { "maxDuration": 30 }
+  }
+}

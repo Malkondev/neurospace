@@ -1,0 +1,9 @@
+<header class="capitulo-header dashboard-header">
+  <div><span class="inicio-kicker">PESSOAS & PERSONAGENS</span><h1>Personalidades</h1><p class="subtitle">Registros de pessoas e personagens que ajudam a pensar sobre comportamento, identidade e ideias.</p></div>
+</header>
+<div class="library-toolbar"><input id="personalidade-search" class="library-search" placeholder="Buscar personalidade..." oninput="filtrarPersonalidades(this.value)"><span id="personalidade-count" class="library-count"></span></div>
+<div class="card-grid" id="personalidades-grid">
+<div class="card personality-card" data-name="sigmund freud" onclick="carregarPagina('freud')"><div class="card-img-container"><img src="assets/freud.png" alt="Sigmund Freud"></div><div class="card-content"><h3 class="card-title">Sigmund Freud</h3><div class="card-meta">Psicanálise • 1856–1939</div><p class="card-desc">Registro disponível para desenvolvimento e conexões.</p></div></div>
+<div class="card personality-card" data-name="getulio vargas" onclick="carregarPagina('getulio')"><div class="card-img-container"><img src="assets/getulio.jpeg" alt="Getúlio Vargas"></div><div class="card-content"><h3 class="card-title">Getúlio Vargas</h3><div class="card-meta">História política • 1882–1954</div><p class="card-desc">Registro disponível para desenvolvimento e conexões.</p></div></div>
+<div class="library-empty" id="personalidades-empty" hidden>Nenhuma personalidade encontrada.</div>
+</div>
