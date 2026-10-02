@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroSpace 7.0 | Caderno de Estudos</title>
+    <title>NeuroSpace v9.0.1 | Caderno de Estudos</title>
     
     <!-- Tipografia Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Importação dos 6 Ficheiros CSS Modulares -->
     <link rel="stylesheet" href="style/style.css">
+    <link rel="stylesheet" href="style/7-oroboros.css">
 </head>
 <body>
 
@@ -20,7 +21,7 @@
             <!-- Logótipo -->
             <div class="logo-area">
                 <div class="brain-badge-small">🧠</div>
-                <span>NeuroSpace <small class="logo-version">7.0</small></span>
+                <span>NeuroSpace <small class="logo-version">v9.0.1</small></span>
             </div>
 
             <!-- Alternador de Tema (Dark / Light) -->
@@ -200,8 +201,15 @@
 Exemplo: Hoje pensei sobre como a percepção muda a maneira como interpretamos a realidade."></textarea>
                 </div>
                 <div class="oroboros-column">
-                    <div class="oroboros-label-row"><span>HTML organizado</span><span id="oroboros-status">Aguardando</span></div>
+                    <div class="oroboros-label-row">
+                        <div class="oroboros-result-tabs" role="tablist" aria-label="Resultado do Oroboros">
+                            <button id="oroboros-tab-visual" class="oroboros-tab ativo" type="button" onclick="alternarVisualizacaoOroboros('visual')">Visual</button>
+                            <button id="oroboros-tab-codigo" class="oroboros-tab" type="button" onclick="alternarVisualizacaoOroboros('codigo')">HTML</button>
+                        </div>
+                        <span id="oroboros-status">Aguardando</span>
+                    </div>
                     <div id="oroboros-preview" class="oroboros-preview" aria-live="polite"><span class="oroboros-empty">O resultado aparecerá aqui.</span></div>
+                    <pre id="oroboros-code" class="oroboros-code" hidden aria-label="Código HTML gerado"></pre>
                 </div>
             </div>
 

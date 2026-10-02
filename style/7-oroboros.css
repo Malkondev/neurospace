@@ -1,0 +1,393 @@
+/* =========================================================
+   OROBOROS — editor cognitivo do NeuroSpace 7.0
+   Tudo relacionado à interface da IA fica neste arquivo.
+   ========================================================= */
+
+.oroboros-trigger {
+    position: relative;
+}
+
+.oroboros-trigger::after {
+    content: 'IA';
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    padding: 2px 3px;
+    border-radius: 4px;
+    background: var(--accent, #8b5cf6);
+    color: #fff;
+    font-size: 7px;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.oroboros-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 22px;
+}
+
+.oroboros-modal.aberto {
+    display: flex;
+}
+
+.oroboros-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 7, 14, .78);
+    backdrop-filter: blur(14px);
+}
+
+.oroboros-panel {
+    position: relative;
+    width: min(1160px, 100%);
+    max-height: min(88vh, 880px);
+    overflow: auto;
+    border: 1px solid rgba(139, 92, 246, .32);
+    border-radius: 24px;
+    background: var(--panel-bg, #10131d);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, .5), 0 0 70px rgba(139, 92, 246, .12);
+    animation: oroborosIn .22s ease-out;
+}
+
+@keyframes oroborosIn {
+    from { opacity: 0; transform: translateY(14px) scale(.985); }
+    to { opacity: 1; transform: none; }
+}
+
+.oroboros-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 24px 26px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+
+.oroboros-kicker {
+    display: block;
+    margin-bottom: 7px;
+    color: #a78bfa;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .16em;
+}
+
+.oroboros-header h2 {
+    margin: 0 0 5px;
+    font-size: 26px;
+}
+
+.oroboros-header p {
+    margin: 0;
+    max-width: 650px;
+    color: inherit;
+    opacity: .66;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.oroboros-close {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .04);
+    color: inherit;
+    cursor: pointer;
+    transition: .18s ease;
+}
+
+.oroboros-close:hover {
+    background: rgba(255, 255, 255, .08);
+    transform: translateY(-1px);
+}
+
+.oroboros-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
+    padding: 20px 26px;
+}
+
+.oroboros-column {
+    min-width: 0;
+}
+
+.oroboros-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+    color: inherit;
+    font-size: 12px;
+    opacity: .72;
+}
+
+.oroboros-input,
+.oroboros-preview {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 380px;
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 16px;
+    background: rgba(0, 0, 0, .16);
+    color: inherit;
+    padding: 17px;
+    font: inherit;
+    line-height: 1.68;
+}
+
+.oroboros-input {
+    resize: vertical;
+    outline: none;
+}
+
+.oroboros-input::placeholder {
+    color: inherit;
+    opacity: .34;
+}
+
+.oroboros-input:focus {
+    border-color: rgba(139, 92, 246, .6);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, .1), 0 0 30px rgba(139, 92, 246, .05);
+}
+
+.oroboros-preview {
+    overflow: auto;
+}
+
+.oroboros-preview .oroboros-empty {
+    color: inherit;
+    opacity: .38;
+}
+
+.oroboros-preview h1,
+.oroboros-preview h2,
+.oroboros-preview h3 {
+    margin: .25em 0 .6em;
+    line-height: 1.25;
+}
+
+.oroboros-preview p {
+    margin: .72em 0;
+}
+
+.oroboros-preview ul,
+.oroboros-preview ol {
+    padding-left: 1.35em;
+}
+
+.oroboros-preview blockquote {
+    margin: 1em 0;
+    padding: .2em 0 .2em 13px;
+    border-left: 3px solid #8b5cf6;
+    opacity: .82;
+}
+
+.oroboros-preview code {
+    padding: 2px 5px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, .07);
+}
+
+.oroboros-preview pre {
+    overflow: auto;
+    padding: 12px;
+    border-radius: 9px;
+    background: rgba(0, 0, 0, .2);
+}
+
+.oroboros-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 0 26px 24px;
+}
+
+.oroboros-rule {
+    max-width: 360px;
+    color: inherit;
+    font-size: 11px;
+    line-height: 1.5;
+    opacity: .46;
+}
+
+.oroboros-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.oroboros-btn {
+    min-height: 42px;
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 11px;
+    padding: 0 14px;
+    background: rgba(255, 255, 255, .04);
+    color: inherit;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform .18s ease, background .18s ease, border-color .18s ease, opacity .18s ease;
+}
+
+.oroboros-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, .075);
+}
+
+.oroboros-btn.primary {
+    border-color: transparent;
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(124, 58, 237, .2);
+}
+
+.oroboros-btn.primary:hover:not(:disabled) {
+    box-shadow: 0 10px 28px rgba(124, 58, 237, .3);
+}
+
+.oroboros-btn.apply {
+    border-color: rgba(16, 185, 129, .3);
+    background: rgba(16, 185, 129, .13);
+}
+
+.oroboros-btn:disabled {
+    cursor: not-allowed;
+    opacity: .35;
+}
+
+.oroboros-btn.loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.oroboros-btn.loading::after {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: 8px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    vertical-align: -2px;
+    animation: oroborosSpin .7s linear infinite;
+}
+
+@keyframes oroborosSpin {
+    to { transform: rotate(360deg); }
+}
+
+
+.oroboros-result-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 9px;
+    background: rgba(0,0,0,.12);
+}
+
+.oroboros-tab {
+    border: 0;
+    border-radius: 7px;
+    padding: 5px 9px;
+    background: transparent;
+    color: inherit;
+    opacity: .55;
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    transition: .18s ease;
+}
+
+.oroboros-tab:hover,
+.oroboros-tab.ativo {
+    background: rgba(139,92,246,.16);
+    color: #c4b5fd;
+    opacity: 1;
+}
+
+.oroboros-code {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 380px;
+    max-height: 520px;
+    margin: 0;
+    overflow: auto;
+    border: 1px solid rgba(139,92,246,.18);
+    border-radius: 16px;
+    padding: 17px;
+    background: rgba(0,0,0,.24);
+    color: #d8d1ff;
+    font: 12px/1.65 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.oroboros-preview[hidden],
+.oroboros-code[hidden] {
+    display: none;
+}
+
+@media (max-width: 760px) {
+    .oroboros-modal {
+        align-items: flex-end;
+        padding: 8px;
+    }
+
+    .oroboros-panel {
+        max-height: 94dvh;
+        border-radius: 18px 18px 0 0;
+    }
+
+    .oroboros-header {
+        padding: 18px 16px 14px;
+    }
+
+    .oroboros-header h2 {
+        font-size: 22px;
+    }
+
+    .oroboros-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 14px 16px;
+    }
+
+    .oroboros-input,
+    .oroboros-preview {
+        min-height: 230px;
+    }
+
+    .oroboros-controls {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0 16px 16px;
+    }
+
+    .oroboros-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .oroboros-btn {
+        width: 100%;
+    }
+
+    .oroboros-btn.primary,
+    .oroboros-btn.apply {
+        grid-column: 1 / -1;
+    }
+}

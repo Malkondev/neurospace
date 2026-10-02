@@ -1,0 +1,70 @@
+/* =========================================================
+   STYLE.CSS - Ficheiro Maestro (Central de Importações)
+   ========================================================= */
+@import url('1-base.css');
+@import url('2-layout.css');
+@import url('3-sidebar.css');
+@import url('4-components.css');
+@import url('5-themes.css');
+@import url('6-utilities-modals.css');
+
+/* ─────────────────────────────────────────────
+   NEUROSPACE v9.01 — HERO DA PÁGINA INICIAL
+   ───────────────────────────────────────────── */
+
+.inicio-project-title {
+    margin: 0 0 8px;
+    font-size: clamp(3rem, 7vw, 6.5rem);
+    line-height: .92;
+    letter-spacing: -.055em;
+    font-weight: 800;
+    background: linear-gradient(110deg, #ffffff 0%, #d8d0ff 48%, #9f8cff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-wrap: balance;
+}
+
+.inicio-project-title span {
+    font-weight: 500;
+    opacity: .78;
+}
+
+.inicio-project-subtitle {
+    margin: 0;
+    font-size: clamp(1.5rem, 3vw, 2.6rem);
+    line-height: 1.08;
+    font-weight: 500;
+    letter-spacing: -.025em;
+}
+
+.inicio-project-subtitle span {
+    opacity: .72;
+}
+
+.inicio-version-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 18px;
+}
+
+.inicio-version-kicker strong {
+    padding: 5px 9px;
+    border: 1px solid rgba(167, 139, 250, .35);
+    border-radius: 999px;
+    background: rgba(139, 92, 246, .10);
+    color: #c4b5fd;
+    font-size: .78em;
+    letter-spacing: .04em;
+}
+
+@media (max-width: 640px) {
+    .inicio-project-title {
+        font-size: clamp(2.8rem, 15vw, 4.5rem);
+    }
+
+    .inicio-project-subtitle {
+        font-size: clamp(1.35rem, 7vw, 2rem);
+    }
+}

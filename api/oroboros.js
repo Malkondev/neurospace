@@ -25,9 +25,7 @@ export default async function handler(req, res) {
   try {
     if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "GEMINI_API_KEY não configurada." });
     const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";
-    const model = typeof req.body?.model === "string" && req.body.model.startsWith("gemini-")
-      ? req.body.model
-      : (process.env.GEMINI_MODEL || "gemini-3.8-flash");
+    const model = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
     if (!text) return res.status(400).json({ error: "Envie algum texto." });
     if (text.length > 30000) return res.status(413).json({ error: "Texto grande demais." });
 
@@ -37,7 +35,6 @@ export default async function handler(req, res) {
       contents: text,
       config: {
         systemInstruction: INSTRUCTIONS,
-        temperature: 0.2,
         maxOutputTokens: 4000
       }
     });

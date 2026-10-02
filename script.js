@@ -1012,10 +1012,20 @@ function atualizarContadorOroboros() {
     contador.textContent = `${total} ${total === 1 ? 'palavra' : 'palavras'}`;
 }
 
+function escaparHtmlOroboros(texto) {
+    return String(texto || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 function limparHTMLOroboros(html) {
     const permitido = new Set(['H1','H2','H3','P','STRONG','EM','U','S','BLOCKQUOTE','UL','OL','LI','A','BR','CODE','PRE']);
     const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
     doc.querySelectorAll('script,style,iframe,object,embed,form,svg,math').forEach(el => el.remove());
+
     doc.body.querySelectorAll('*').forEach(el => {
         if (!permitido.has(el.tagName)) {
             el.replaceWith(...Array.from(el.childNodes));
@@ -1034,16 +1044,67 @@ function limparHTMLOroboros(html) {
             el.setAttribute('rel', 'noopener noreferrer');
         }
     });
-    return doc.body.innerHTML.trim();
+
+    let resultado = doc.body.innerHTML.trim();
+
+    // Se a IA devolver apenas texto, nunca deixamos o resultado como texto puro.
+    if (!doc.body.children.length && doc.body.textContent.trim()) {
+        const blocos = doc.body.textContent
+            .trim()
+            .split(/\n\s*\n+/)
+            .map(bloco => bloco.trim())
+            .filter(Boolean);
+
+        const linhas = blocos.length ? blocos : doc.body.textContent.split(/\n+/).map(l => l.trim()).filter(Boolean);
+        resultado = linhas.map(linha => `<p>${escaparHtmlOroboros(linha)}</p>`).join('\n');
+    }
+
+    return resultado;
 }
 
 function mostrarResultadoOroboros(html) {
     const preview = document.getElementById('oroboros-preview');
+    const codigo = document.getElementById('oroboros-code');
     const aplicar = document.getElementById('btn-oroboros-aplicar');
     if (!preview) return;
+
     oroborosHTMLGerado = limparHTMLOroboros(html);
     preview.innerHTML = oroborosHTMLGerado || '<span class="oroboros-empty">A IA não retornou conteúdo.</span>';
+
+    if (codigo) {
+        codigo.textContent = oroborosHTMLGerado || 'Nenhum HTML gerado.';
+    }
+
     if (aplicar) aplicar.disabled = !oroborosHTMLGerado;
+    alternarVisualizacaoOroboros('visual');
+}
+
+function alternarVisualizacaoOroboros(modo) {
+    const visual = document.getElementById('oroboros-preview');
+    const codigo = document.getElementById('oroboros-code');
+    const btnVisual = document.getElementById('oroboros-tab-visual');
+    const btnCodigo = document.getElementById('oroboros-tab-codigo');
+
+    if (!visual || !codigo) return;
+
+    const mostrarCodigo = modo === 'codigo';
+    visual.hidden = mostrarCodigo;
+    codigo.hidden = !mostrarCodigo;
+    btnVisual?.classList.toggle('ativo', !mostrarCodigo);
+    btnCodigo?.classList.toggle('ativo', mostrarCodigo);
+}
+
+function obterControleLocalOroboros() {
+    const limite = Number(window.OROBOROS_CONFIG?.clientDailyLimit || 20);
+    const hoje = new Date().toISOString().slice(0, 10);
+    let dados = {};
+    try { dados = JSON.parse(localStorage.getItem('oroborosUso') || '{}'); } catch (_) {}
+    if (dados.data !== hoje) dados = { data: hoje, usos: 0, ultimaChamada: 0 };
+    return { ...dados, limite };
+}
+
+function salvarControleLocalOroboros(dados) {
+    localStorage.setItem('oroborosUso', JSON.stringify(dados));
 }
 
 async function executarOroboros() {
@@ -1064,6 +1125,21 @@ async function executarOroboros() {
         return;
     }
 
+    const controle = obterControleLocalOroboros();
+    const agora = Date.now();
+    const cooldown = Number(window.OROBOROS_CONFIG?.clientCooldownMs || 4000);
+
+    if (controle.usos >= controle.limite) {
+        status.textContent = `Limite local de ${controle.limite} usos hoje`;
+        return;
+    }
+
+    if (controle.ultimaChamada && agora - controle.ultimaChamada < cooldown) {
+        const espera = Math.ceil((cooldown - (agora - controle.ultimaChamada)) / 1000);
+        status.textContent = `Aguarde ${espera}s`;
+        return;
+    }
+
     botao.classList.add('loading');
     botao.disabled = true;
     status.textContent = 'Oroboros está organizando…';
@@ -1071,16 +1147,22 @@ async function executarOroboros() {
     if (aplicar) aplicar.disabled = true;
 
     try {
+        controle.ultimaChamada = agora;
+        salvarControleLocalOroboros(controle);
+
         const resposta = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: texto, model: window.OROBOROS_CONFIG?.model || 'gpt-5.6-luna' })
+            body: JSON.stringify({ text: texto })
         });
         const dados = await resposta.json().catch(() => ({}));
         if (!resposta.ok) throw new Error(dados.error || `Erro ${resposta.status}`);
         if (!dados.html) throw new Error('A IA não devolveu HTML válido.');
+
+        controle.usos += 1;
+        salvarControleLocalOroboros(controle);
         mostrarResultadoOroboros(dados.html);
-        status.textContent = 'Pronto para revisar';
+        status.textContent = `Pronto para revisar · ${controle.limite - controle.usos} usos locais restantes`;
     } catch (erro) {
         console.error('Oroboros:', erro);
         status.textContent = erro.message || 'Não foi possível conectar';
