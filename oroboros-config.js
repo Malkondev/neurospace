@@ -2,7 +2,7 @@
 window.OROBOROS_CONFIG = {
     // Local: backend rodando no seu computador.
     // Produção: troque pela URL HTTPS do backend que você publicar.
-    endpoint: "https://zany-space-guacamole-wp4ppg5vg63g7w6-8787.app.github.dev/api/oroboros",
+    endpoint: "https://neurospace-oroboros.onrender.com/api/oroboros",
     model: "gemini-3.5-flash-lite",
     clientDailyLimit: 20,
     clientCooldownMs: 4000
