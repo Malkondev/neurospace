@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oroboros · NeuroSpace</title>
+
+    <link rel="stylesheet" href="style/0-variables.css">
+    <link rel="stylesheet" href="style/1-base.css">
+    <link rel="stylesheet" href="style/7-oroboros.css">
+</head>
+
+<body class="oroboros-page">
+
+    <main class="oroboros-conversation">
+
+        <header class="oroboros-chat-header">
+            <a href="index.html" class="oroboros-back">← NeuroSpace</a>
+
+            <div class="oroboros-identity">
+                <div class="oroboros-symbol" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <div>
+                    <span class="oroboros-chat-kicker">ESPAÇO COGNITIVO</span>
+                    <h1>Oroboros</h1>
+                    <p>Organiza seus pensamentos. Não cria por você.</p>
+                </div>
+            </div>
+
+            <div class="oroboros-online">
+                <i></i>
+                pronto
+            </div>
+        </header>
+
+        <section id="oroboros-chat" class="oroboros-chat" aria-live="polite">
+            <div class="oroboros-welcome">
+                <div class="oroboros-symbol large" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <h2>O que está passando pela sua cabeça?</h2>
+
+                <p>
+                    Escreva ou fale. Eu organizo suas ideias,
+                    preservando o que você quis dizer.
+                </p>
+
+                <span class="oroboros-rule-chat">
+                    preservar · estruturar · não inventar
+                </span>
+            </div>
+        </section>
+
+        <footer class="oroboros-composer">
+
+            <div id="oroboros-voice-status" class="oroboros-voice-status" hidden>
+                Ouvindo...
+            </div>
+
+            <div class="oroboros-input-area">
+
+                <button
+                    id="oroboros-chat-mic"
+                    class="oroboros-chat-button mic"
+                    type="button"
+                    onclick="toggleOroborosChatVoz()"
+                    aria-label="Falar com Oroboros"
+                    title="Falar com Oroboros">
+                    🎙
+                </button>
+
+                <textarea
+                    id="oroboros-chat-input"
+                    rows="1"
+                    placeholder="Escreva uma ideia para o Oroboros..."
+                    aria-label="Mensagem para Oroboros"></textarea>
+
+                <button
+                    id="oroboros-chat-send"
+                    class="oroboros-chat-button send"
+                    type="button"
+                    onclick="enviarMensagemOroborosChat()"
+                    aria-label="Enviar mensagem"
+                    title="Enviar">
+                    ↑
+                </button>
+
+            </div>
+
+            <div class="oroboros-composer-footer">
+                <span>Oroboros não cria seus pensamentos. Ele organiza seus pensamentos.</span>
+                <span id="oroboros-chat-count">0 palavras</span>
+            </div>
+
+        </footer>
+
+    </main>
+
+    <script src="oroboros-config.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>

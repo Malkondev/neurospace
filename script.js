@@ -1194,3 +1194,398 @@ document.addEventListener('keydown', e => {
     const modal = document.getElementById('oroboros-modal');
     if (e.key === 'Escape' && modal?.classList.contains('aberto')) fecharOroboros();
 });
+
+
+/* =========================================================
+   OROBOROS — ESPAÇO CONVERSACIONAL
+   Usa o mesmo backend do editor Oroboros da Sinapse.
+   ========================================================= */
+
+let oroborosChatReconhecimento = null;
+let oroborosChatOuvindo = false;
+let oroborosChatProcessando = false;
+
+function inicializarOroborosChat() {
+    const input = document.getElementById('oroboros-chat-input');
+    if (!input) return;
+
+    input.addEventListener('input', () => {
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 180) + 'px';
+
+        const contador = document.getElementById('oroboros-chat-count');
+        if (contador) {
+            const palavras = input.value.trim()
+                ? input.value.trim().split(/\s+/).length
+                : 0;
+            contador.textContent = `${palavras} palavra${palavras === 1 ? '' : 's'}`;
+        }
+    });
+
+    input.addEventListener('keydown', event => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            enviarMensagemOroborosChat();
+        }
+    });
+
+    inicializarReconhecimentoOroborosChat();
+}
+
+function adicionarMensagemOroborosChat(tipo, conteudo, html = false) {
+    const chat = document.getElementById('oroboros-chat');
+    if (!chat) return;
+
+    const welcome = chat.querySelector('.oroboros-welcome');
+    if (welcome) welcome.remove();
+
+    const mensagem = document.createElement('article');
+    mensagem.className = `oroboros-message ${tipo}`;
+
+    const bolha = document.createElement('div');
+    bolha.className = 'oroboros-message-bubble';
+
+    if (html) {
+        bolha.innerHTML = conteudo;
+    } else {
+        bolha.textContent = conteudo;
+    }
+
+    mensagem.appendChild(bolha);
+    chat.appendChild(mensagem);
+
+    requestAnimationFrame(() => {
+        mensagem.classList.add('visible');
+        chat.scrollTo({
+            top: chat.scrollHeight,
+            behavior: 'smooth'
+        });
+    });
+
+    return mensagem;
+}
+
+function adicionarProcessamentoOroborosChat() {
+    const chat = document.getElementById('oroboros-chat');
+    if (!chat) return null;
+
+    const mensagem = document.createElement('article');
+    mensagem.className = 'oroboros-message ai oroboros-processing-message';
+
+    const bolha = document.createElement('div');
+    bolha.className = 'oroboros-message-bubble';
+
+    bolha.innerHTML = `
+        <span class="oroboros-processing-label">Organizando</span>
+        <span class="oroboros-processing-dots">
+            <i></i><i></i><i></i>
+        </span>
+    `;
+
+    mensagem.appendChild(bolha);
+    chat.appendChild(mensagem);
+
+    requestAnimationFrame(() => {
+        mensagem.classList.add('visible');
+        chat.scrollTo({
+            top: chat.scrollHeight,
+            behavior: 'smooth'
+        });
+    });
+
+    return mensagem;
+}
+
+function escaparHtmlOroborosChat(texto) {
+    const div = document.createElement('div');
+    div.textContent = texto;
+    return div.innerHTML;
+}
+
+function limparRespostaOroborosChat(html) {
+    if (!html) return '';
+
+    let resultado = String(html).trim();
+
+    resultado = resultado
+        .replace(/^```html\s*/i, '')
+        .replace(/^```\s*/i, '')
+        .replace(/\s*```$/i, '')
+        .trim();
+
+    const permitido = document.createElement('div');
+    permitido.innerHTML = resultado;
+
+    permitido.querySelectorAll('script, style, iframe, object, embed, form').forEach(el => {
+        el.remove();
+    });
+
+    permitido.querySelectorAll('*').forEach(el => {
+        [...el.attributes].forEach(attr => {
+            if (/^on/i.test(attr.name)) {
+                el.removeAttribute(attr.name);
+            }
+
+            if (
+                (attr.name === 'href' || attr.name === 'src') &&
+                /^\s*javascript:/i.test(attr.value)
+            ) {
+                el.removeAttribute(attr.name);
+            }
+        });
+    });
+
+    return permitido.innerHTML.trim();
+}
+
+async function enviarMensagemOroborosChat() {
+    if (oroborosChatProcessando) return;
+
+    const input = document.getElementById('oroboros-chat-input');
+    const botao = document.getElementById('oroboros-chat-send');
+
+    if (!input || !botao) return;
+
+    const texto = input.value.trim();
+
+    if (!texto) {
+        input.focus();
+        return;
+    }
+
+    const config = window.OROBOROS_CONFIG || {};
+
+    if (!config.endpoint) {
+        adicionarMensagemOroborosChat(
+            'ai',
+            'O endpoint do Oroboros não está configurado.'
+        );
+        return;
+    }
+
+    oroborosChatProcessando = true;
+    botao.disabled = true;
+
+    adicionarMensagemOroborosChat('user', texto);
+
+    input.value = '';
+    input.style.height = 'auto';
+
+    const contador = document.getElementById('oroboros-chat-count');
+    if (contador) contador.textContent = '0 palavras';
+
+    const processamento = adicionarProcessamentoOroborosChat();
+
+    try {
+        const resposta = await fetch(config.endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                text: texto,
+                model: config.model
+            })
+        });
+
+        const dados = await resposta.json().catch(() => ({}));
+
+        if (!resposta.ok) {
+            throw new Error(
+                dados.error ||
+                dados.message ||
+                `Erro ${resposta.status}`
+            );
+        }
+
+        const html = limparRespostaOroborosChat(
+            dados.html ||
+            dados.result ||
+            dados.text ||
+            ''
+        );
+
+        if (!html) {
+            throw new Error('O Oroboros não retornou conteúdo.');
+        }
+
+        if (processamento) processamento.remove();
+
+        adicionarMensagemOroborosChat('ai', html, true);
+
+    } catch (erro) {
+        console.error('Oroboros conversacional:', erro);
+
+        if (processamento) processamento.remove();
+
+        const mensagem = `
+            <strong>Não consegui organizar esse pensamento.</strong>
+            <div class="oroboros-error-detail">
+                ${escaparHtmlOroborosChat(
+                    erro.message || 'Verifique se o backend está online.'
+                )}
+            </div>
+        `;
+
+        adicionarMensagemOroborosChat('ai', mensagem, true);
+
+    } finally {
+        oroborosChatProcessando = false;
+        botao.disabled = false;
+        input.focus();
+    }
+}
+
+function inicializarReconhecimentoOroborosChat() {
+    const Reconhecimento =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
+
+    if (!Reconhecimento) {
+        const mic = document.getElementById('oroboros-chat-mic');
+        if (mic) {
+            mic.disabled = true;
+            mic.title = 'Reconhecimento de voz não disponível neste navegador';
+        }
+        return;
+    }
+
+    oroborosChatReconhecimento = new Reconhecimento();
+
+    oroborosChatReconhecimento.lang = 'pt-BR';
+    oroborosChatReconhecimento.continuous = true;
+    oroborosChatReconhecimento.interimResults = true;
+
+    let textoBase = '';
+
+    oroborosChatReconhecimento.onstart = () => {
+        oroborosChatOuvindo = true;
+
+        const botao = document.getElementById('oroboros-chat-mic');
+        const status = document.getElementById('oroboros-voice-status');
+
+        if (botao) botao.classList.add('active');
+        if (status) {
+            status.hidden = false;
+            status.textContent = 'Ouvindo...';
+        }
+    };
+
+    oroborosChatReconhecimento.onresult = event => {
+        const input = document.getElementById('oroboros-chat-input');
+        if (!input) return;
+
+        let final = '';
+        let interim = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const trecho = event.results[i][0].transcript;
+
+            if (event.results[i].isFinal) {
+                final += trecho + ' ';
+            } else {
+                interim += trecho;
+            }
+        }
+
+        if (final) {
+            textoBase += final;
+            input.value = textoBase.trim() + ' ';
+        }
+
+        const preview = document.getElementById('oroboros-voice-status');
+
+        if (preview && interim) {
+            preview.hidden = false;
+            preview.textContent = `Ouvindo: ${interim}`;
+        }
+
+        input.dispatchEvent(new Event('input'));
+
+        requestAnimationFrame(() => {
+            input.scrollTop = input.scrollHeight;
+        });
+    };
+
+    oroborosChatReconhecimento.onerror = event => {
+        console.error('Voz Oroboros:', event.error);
+
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+            pararOroborosChatVoz();
+        }
+    };
+
+    oroborosChatReconhecimento.onend = () => {
+        if (oroborosChatOuvindo) {
+            try {
+                oroborosChatReconhecimento.start();
+            } catch (_) {}
+        }
+    };
+
+    window._oroborosChatTextoBase = () => textoBase;
+    window._setOroborosChatTextoBase = valor => {
+        textoBase = valor || '';
+    };
+}
+
+function toggleOroborosChatVoz() {
+    if (!oroborosChatReconhecimento) {
+        inicializarReconhecimentoOroborosChat();
+    }
+
+    if (!oroborosChatReconhecimento) return;
+
+    if (oroborosChatOuvindo) {
+        pararOroborosChatVoz();
+    } else {
+        iniciarOroborosChatVoz();
+    }
+}
+
+function iniciarOroborosChatVoz() {
+    if (!oroborosChatReconhecimento) return;
+
+    const input = document.getElementById('oroboros-chat-input');
+
+    if (input) {
+        window._setOroborosChatTextoBase(input.value.trim());
+    }
+
+    oroborosChatOuvindo = true;
+
+    try {
+        oroborosChatReconhecimento.start();
+    } catch (_) {}
+
+    const status = document.getElementById('oroboros-voice-status');
+
+    if (status) {
+        status.hidden = false;
+        status.textContent = 'Ouvindo...';
+    }
+}
+
+function pararOroborosChatVoz() {
+    oroborosChatOuvindo = false;
+
+    if (oroborosChatReconhecimento) {
+        try {
+            oroborosChatReconhecimento.stop();
+        } catch (_) {}
+    }
+
+    const botao = document.getElementById('oroboros-chat-mic');
+    const status = document.getElementById('oroboros-voice-status');
+
+    if (botao) botao.classList.remove('active');
+
+    if (status) {
+        status.hidden = true;
+        status.textContent = '';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    inicializarOroborosChat();
+});
