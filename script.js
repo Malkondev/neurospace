@@ -3722,6 +3722,40 @@ window.inicializarConstelacao = async function(){
 
             ctx.stroke();
 
+            /* nome do pensamento */
+
+            const distanciaTexto =
+                raio * 2.8;
+
+            ctx.save();
+
+            ctx.font =
+                ativo
+                    ? '600 14px Inter, sans-serif'
+                    : '500 12px Inter, sans-serif';
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+
+            ctx.shadowBlur =
+                ativo ? 12 : 7;
+
+            ctx.shadowColor =
+                'rgba(80,180,255,0.75)';
+
+            ctx.fillStyle =
+                ativo
+                    ? 'rgba(225,245,255,1)'
+                    : 'rgba(185,220,250,0.88)';
+
+            ctx.fillText(
+                n.titulo,
+                n.x,
+                n.y + distanciaTexto
+            );
+
+            ctx.restore();
+
         });
     }
 
