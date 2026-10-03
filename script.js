@@ -1589,3 +1589,2675 @@ function pararOroborosChatVoz() {
 document.addEventListener('DOMContentLoaded', () => {
     inicializarOroborosChat();
 });
+
+
+/* =========================================================
+   CONSTELAÇÃO — REFORMA VISUAL
+   Mantém os dados reais e a Massa Cognitiva.
+   ========================================================= */
+
+function inicializarConstelacao() {
+    const canvas = document.getElementById('constelacao-canvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const wrap = canvas.parentElement;
+
+    let W = 0;
+    let H = 0;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    const views = JSON.parse(localStorage.getItem('neuroNodeViews') || '{}');
+
+    const massaDoNo = n => {
+        const texto = `${n.titulo || ''} ${n.descricao || ''}`.trim().length;
+        const conexoes = obterConexoesDoNo(n.id).length;
+        const visualizacoes = Number(views[n.id] || 0);
+
+        return (
+            1 +
+            Math.min(10, texto / 180) +
+            conexoes * 1.6 +
+            Math.min(8, visualizacoes * 0.7)
+        );
+    };
+
+    let zoom = 1;
+    let offset = { x: 0, y: 0 };
+
+    const nodes = ANALOGIAS_NODES.map((n, i) => {
+        const massa = massaDoNo(n);
+
+        return {
+            n,
+            massa,
+            r: Math.min(24, 5 + Math.sqrt(massa) * 2.1),
+            x: W * (0.18 + ((n.x ?? (15 + (i * 17) % 70)) / 100) * 0.64),
+            y: H * (0.18 + ((n.y ?? (20 + (i * 29) % 60)) / 100) * 0.64),
+            vx: 0,
+            vy: 0,
+            drag: false
+        };
+    });
+
+    const nodeById = id => nodes.find(p => p.n.id === id);
+
+    let hover = null;
+    let dragNode = null;
+    let pan = false;
+    let last = { x: 0, y: 0 };
+    let moved = false;
+
+    function resize() {
+        const rect = wrap.getBoundingClientRect();
+
+        W = Math.max(320, rect.width);
+        H = Math.max(400, rect.height);
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        canvas.width = Math.floor(W * dpr);
+        canvas.height = Math.floor(H * dpr);
+        canvas.style.width = `${W}px`;
+        canvas.style.height = `${H}px`;
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function mundoParaTela(x, y) {
+        return {
+            x: (x - W / 2) * zoom + W / 2 + offset.x,
+            y: (y - H / 2) * zoom + H / 2 + offset.y
+        };
+    }
+
+    function telaParaMundo(x, y) {
+        return {
+            x: (x - W / 2 - offset.x) / zoom + W / 2,
+            y: (y - H / 2 - offset.y) / zoom + H / 2
+        };
+    }
+
+    function findNode(screenX, screenY) {
+        const pos = telaParaMundo(screenX, screenY);
+
+        return nodes
+            .slice()
+            .sort((a, b) => b.r - a.r)
+            .find(p => Math.hypot(p.x - pos.x, p.y - pos.y) < p.r + 15 / zoom);
+    }
+
+    function aumentarVisualizacao(n) {
+        views[n.id] = Number(views[n.id] || 0) + 1;
+        localStorage.setItem('neuroNodeViews', JSON.stringify(views));
+    }
+
+    function desenharFundo(t) {
+        const grad = ctx.createRadialGradient(
+            W * 0.5,
+            H * 0.46,
+            10,
+            W * 0.5,
+            H * 0.46,
+            Math.max(W, H) * 0.72
+        );
+
+        grad.addColorStop(0, 'rgba(30,64,175,.13)');
+        grad.addColorStop(0.42, 'rgba(15,23,42,.42)');
+        grad.addColorStop(1, '#030712');
+
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+
+        /* campo de estrelas */
+        for (let i = 0; i < 95; i++) {
+            const x = (i * 83.17) % W;
+            const y = (i * 47.31) % H;
+            const pulse = 0.35 + Math.sin(t * 0.0007 + i) * 0.2;
+
+            ctx.beginPath();
+            ctx.arc(x, y, i % 7 === 0 ? 1.15 : 0.55, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(147,197,253,${Math.max(.08, pulse)})`;
+            ctx.fill();
+        }
+
+        /* halo central */
+        const halo = ctx.createRadialGradient(
+            W / 2,
+            H / 2,
+            0,
+            W / 2,
+            H / 2,
+            Math.min(W, H) * 0.34
+        );
+
+        halo.addColorStop(0, 'rgba(59,130,246,.055)');
+        halo.addColorStop(1, 'rgba(59,130,246,0)');
+
+        ctx.fillStyle = halo;
+        ctx.fillRect(0, 0, W, H);
+    }
+
+    function atualizarFisica() {
+        if (!nodes.length) return;
+
+        for (let i = 0; i < nodes.length; i++) {
+            const a = nodes[i];
+
+            for (let j = i + 1; j < nodes.length; j++) {
+                const b = nodes[j];
+
+                const dx = b.x - a.x;
+                const dy = b.y - a.y;
+                const dist = Math.max(18, Math.hypot(dx, dy));
+                const nx = dx / dist;
+                const ny = dy / dist;
+
+                const distanciaIdeal =
+                    100 +
+                    Math.min(100, (a.massa + b.massa) * 4);
+
+                const forca =
+                    (distanciaIdeal - dist) * 0.0009;
+
+                if (!a.drag) {
+                    a.vx += nx * forca;
+                    a.vy += ny * forca;
+                }
+
+                if (!b.drag) {
+                    b.vx -= nx * forca;
+                    b.vy -= ny * forca;
+                }
+
+                /* repulsão */
+                if (dist < 170) {
+                    const repel =
+                        (170 - dist) / 170 * 0.045;
+
+                    if (!a.drag) {
+                        a.vx -= nx * repel;
+                        a.vy -= ny * repel;
+                    }
+
+                    if (!b.drag) {
+                        b.vx += nx * repel;
+                        b.vy += ny * repel;
+                    }
+                }
+            }
+        }
+
+        /* conexões funcionam como fios elásticos */
+        ANALOGIAS_CONNECTIONS.forEach(c => {
+            const a = nodeById(c.de);
+            const b = nodeById(c.para);
+
+            if (!a || !b) return;
+
+            const dx = b.x - a.x;
+            const dy = b.y - a.y;
+            const dist = Math.max(1, Math.hypot(dx, dy));
+            const nx = dx / dist;
+            const ny = dy / dist;
+
+            const target =
+                90 +
+                Math.min(90, (a.massa + b.massa) * 3.5);
+
+            const force = (dist - target) * 0.0015;
+
+            if (!a.drag) {
+                a.vx += nx * force * (1 + b.massa * 0.08);
+                a.vy += ny * force * (1 + b.massa * 0.08);
+            }
+
+            if (!b.drag) {
+                b.vx -= nx * force * (1 + a.massa * 0.08);
+                b.vy -= ny * force * (1 + a.massa * 0.08);
+            }
+        });
+
+        nodes.forEach(p => {
+            if (p.drag) return;
+
+            p.vx *= 0.985;
+            p.vy *= 0.985;
+
+            p.vx = Math.max(-0.75, Math.min(0.75, p.vx));
+            p.vy = Math.max(-0.75, Math.min(0.75, p.vy));
+
+            p.x += p.vx;
+            p.y += p.vy;
+
+            p.x = Math.max(30, Math.min(W - 30, p.x));
+            p.y = Math.max(30, Math.min(H - 30, p.y));
+        });
+    }
+
+    function desenharConexao(a, b, ativo, t) {
+        const A = mundoParaTela(a.x, a.y);
+        const B = mundoParaTela(b.x, b.y);
+
+        const dx = B.x - A.x;
+        const dy = B.y - A.y;
+        const dist = Math.max(1, Math.hypot(dx, dy));
+
+        const nx = -dy / dist;
+        const ny = dx / dist;
+
+        const curva =
+            Math.min(32, dist * 0.12) *
+            Math.sin((a.massa + b.massa) * 0.4);
+
+        const cx = (A.x + B.x) / 2 + nx * curva;
+        const cy = (A.y + B.y) / 2 + ny * curva;
+
+        ctx.beginPath();
+        ctx.moveTo(A.x, A.y);
+        ctx.quadraticCurveTo(cx, cy, B.x, B.y);
+
+        ctx.strokeStyle = ativo
+            ? 'rgba(125,211,252,.65)'
+            : 'rgba(96,165,250,.18)';
+
+        ctx.lineWidth = ativo
+            ? 1.8
+            : Math.min(2.4, 0.65 + (a.massa + b.massa) * 0.025);
+
+        ctx.shadowBlur = ativo ? 12 : 4;
+        ctx.shadowColor = 'rgba(59,130,246,.65)';
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        /* pequeno pulso percorrendo a conexão */
+        if (ativo) {
+            const progress = (t * 0.00008) % 1;
+
+            const px =
+                (1 - progress) * (1 - progress) * A.x +
+                2 * (1 - progress) * progress * cx +
+                progress * progress * B.x;
+
+            const py =
+                (1 - progress) * (1 - progress) * A.y +
+                2 * (1 - progress) * progress * cy +
+                progress * progress * B.y;
+
+            ctx.beginPath();
+            ctx.arc(px, py, 2.1, 0, Math.PI * 2);
+            ctx.fillStyle = '#bae6fd';
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = '#60a5fa';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+    }
+
+    function desenharNo(p, t) {
+        const pos = mundoParaTela(p.x, p.y);
+
+        const ativo = hover === p;
+        const pulsar =
+            1 +
+            Math.sin(t * 0.0018 + p.massa) * 0.035;
+
+        const raio =
+            (p.r + (ativo ? 3 : 0)) *
+            pulsar *
+            Math.max(0.8, Math.min(1.2, zoom));
+
+        /* aura */
+        const aura = ctx.createRadialGradient(
+            pos.x,
+            pos.y,
+            0,
+            pos.x,
+            pos.y,
+            raio * (ativo ? 5 : 3.5)
+        );
+
+        aura.addColorStop(
+            0,
+            ativo
+                ? 'rgba(147,197,253,.32)'
+                : 'rgba(96,165,250,.16)'
+        );
+        aura.addColorStop(1, 'rgba(59,130,246,0)');
+
+        ctx.fillStyle = aura;
+        ctx.beginPath();
+        ctx.arc(
+            pos.x,
+            pos.y,
+            raio * (ativo ? 5 : 3.5),
+            0,
+            Math.PI * 2
+        );
+        ctx.fill();
+
+        /* quatro pequenos pontos orbitais */
+        for (let i = 0; i < 4; i++) {
+            const ang =
+                t * 0.00025 +
+                i * Math.PI / 2 +
+                p.massa;
+
+            const ox = pos.x + Math.cos(ang) * raio * 1.75;
+            const oy = pos.y + Math.sin(ang) * raio * 1.75;
+
+            ctx.beginPath();
+            ctx.arc(ox, oy, ativo ? 1.5 : 0.9, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(147,197,253,.6)';
+            ctx.fill();
+        }
+
+        /* núcleo */
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, raio, 0, Math.PI * 2);
+
+        const nucleo = ctx.createRadialGradient(
+            pos.x - raio * .3,
+            pos.y - raio * .3,
+            1,
+            pos.x,
+            pos.y,
+            raio
+        );
+
+        nucleo.addColorStop(0, '#e0f2fe');
+        nucleo.addColorStop(.35, '#93c5fd');
+        nucleo.addColorStop(1, '#2563eb');
+
+        ctx.fillStyle = nucleo;
+        ctx.shadowBlur = ativo ? 30 : 13 + p.massa;
+        ctx.shadowColor = '#3b82f6';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        /* centro */
+        ctx.beginPath();
+        ctx.arc(
+            pos.x - raio * .28,
+            pos.y - raio * .28,
+            Math.max(1.2, raio * .22),
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fillStyle = '#f8fafc';
+        ctx.fill();
+
+        if (ativo || p.massa > 8) {
+            ctx.save();
+
+            ctx.font = '600 11px Inter, sans-serif';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#e0f2fe';
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = 'rgba(59,130,246,.7)';
+
+            const titulo = p.n.titulo || 'Pensamento';
+
+            ctx.fillText(
+                titulo,
+                pos.x + raio + 10,
+                pos.y - raio - 4
+            );
+
+            ctx.restore();
+        }
+    }
+
+    function desenharVazio() {
+        ctx.save();
+
+        ctx.textAlign = 'center';
+
+        ctx.fillStyle = 'rgba(148,163,184,.12)';
+        ctx.font = '600 42px Inter, sans-serif';
+        ctx.fillText('✦', W / 2, H / 2 - 30);
+
+        ctx.fillStyle = 'rgba(226,232,240,.72)';
+        ctx.font = '600 13px Inter, sans-serif';
+        ctx.fillText(
+            'Sua constelação ainda está vazia',
+            W / 2,
+            H / 2 + 12
+        );
+
+        ctx.fillStyle = 'rgba(148,163,184,.52)';
+        ctx.font = '400 10px Inter, sans-serif';
+        ctx.fillText(
+            'Os pensamentos aparecerão aqui quando forem registrados.',
+            W / 2,
+            H / 2 + 34
+        );
+
+        ctx.restore();
+    }
+
+    function render(t = 0) {
+        atualizarFisica();
+
+        ctx.clearRect(0, 0, W, H);
+        desenharFundo(t);
+
+        if (!nodes.length) {
+            desenharVazio();
+            requestAnimationFrame(render);
+            return;
+        }
+
+        ANALOGIAS_CONNECTIONS.forEach(c => {
+            const a = nodeById(c.de);
+            const b = nodeById(c.para);
+
+            if (!a || !b) return;
+
+            const ativo =
+                hover === a ||
+                hover === b;
+
+            desenharConexao(a, b, ativo, t);
+        });
+
+        nodes
+            .slice()
+            .sort((a, b) => a.massa - b.massa)
+            .forEach(p => desenharNo(p, t));
+
+        requestAnimationFrame(render);
+    }
+
+    canvas.onpointerdown = e => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const node = findNode(x, y);
+
+        moved = false;
+        last = { x: e.clientX, y: e.clientY };
+
+        if (node) {
+            dragNode = node;
+            node.drag = true;
+            aumentarVisualizacao(node.n);
+        } else {
+            pan = true;
+        }
+
+        canvas.classList.add('dragging');
+
+        try {
+            canvas.setPointerCapture(e.pointerId);
+        } catch (_) {}
+    };
+
+    canvas.onpointermove = e => {
+        const rect = canvas.getBoundingClientRect();
+
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        if (dragNode) {
+            const pos = telaParaMundo(x, y);
+
+            dragNode.x = pos.x;
+            dragNode.y = pos.y;
+            dragNode.vx = 0;
+            dragNode.vy = 0;
+
+            moved = true;
+            return;
+        }
+
+        if (pan) {
+            offset.x += e.clientX - last.x;
+            offset.y += e.clientY - last.y;
+
+            last = {
+                x: e.clientX,
+                y: e.clientY
+            };
+
+            moved = true;
+            return;
+        }
+
+        hover = findNode(x, y);
+
+        const tip = document.getElementById('constelacao-tooltip');
+
+        if (tip && hover) {
+            tip.style.display = 'block';
+
+            tip.style.left =
+                Math.min(x + 16, W - 190) + 'px';
+
+            tip.style.top =
+                Math.min(y + 16, H - 80) + 'px';
+
+            tip.innerHTML = `
+                <strong>${escHtml(hover.n.titulo)}</strong>
+                <span>
+                    ${tipoAnalogiaLabel(hover.n.tipo)}
+                    · massa ${hover.massa.toFixed(1)}
+                    · ${obterConexoesDoNo(hover.n.id).length}
+                    conexões
+                </span>
+            `;
+        } else if (tip) {
+            tip.style.display = 'none';
+        }
+    };
+
+    const release = e => {
+        if (dragNode) {
+            dragNode.drag = false;
+            dragNode = null;
+        }
+
+        pan = false;
+        canvas.classList.remove('dragging');
+
+        try {
+            canvas.releasePointerCapture(e.pointerId);
+        } catch (_) {}
+    };
+
+    canvas.onpointerup = release;
+    canvas.onpointercancel = release;
+
+    canvas.onpointerleave = () => {
+        if (!dragNode && !pan) {
+            hover = null;
+
+            const tip =
+                document.getElementById('constelacao-tooltip');
+
+            if (tip) tip.style.display = 'none';
+        }
+    };
+
+    canvas.onclick = e => {
+        if (moved) return;
+
+        const rect = canvas.getBoundingClientRect();
+
+        const node = findNode(
+            e.clientX - rect.left,
+            e.clientY - rect.top
+        );
+
+        if (!node || !node.n.pagina) return;
+
+        aumentarVisualizacao(node.n);
+
+        const btn =
+            document.querySelector(
+                `[data-page="${node.n.pagina}"]`
+            );
+
+        carregarPagina(node.n.pagina, btn);
+    };
+
+    canvas.onwheel = e => {
+        e.preventDefault();
+
+        const rect = canvas.getBoundingClientRect();
+
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const antes = telaParaMundo(mouseX, mouseY);
+
+        const fator = e.deltaY > 0 ? 0.9 : 1.1;
+
+        zoom = Math.max(
+            0.55,
+            Math.min(2.4, zoom * fator)
+        );
+
+        const depois = telaParaMundo(mouseX, mouseY);
+
+        offset.x += (depois.x - antes.x) * zoom;
+        offset.y += (depois.y - antes.y) * zoom;
+    };
+
+    constelacaoEstado = {
+        offset,
+        nodes,
+        get zoom() {
+            return zoom;
+        },
+        set zoom(valor) {
+            zoom = Math.max(.55, Math.min(2.4, valor));
+        }
+    };
+
+    resize();
+
+    if (constelacaoResizeObserver) {
+        constelacaoResizeObserver.disconnect();
+    }
+
+    constelacaoResizeObserver =
+        new ResizeObserver(resize);
+
+    constelacaoResizeObserver.observe(wrap);
+
+    requestAnimationFrame(render);
+}
+
+function recentralizarConstelacao() {
+    if (!constelacaoEstado) return;
+
+    constelacaoEstado.offset.x = 0;
+    constelacaoEstado.offset.y = 0;
+    constelacaoEstado.zoom = 1;
+}
+
+
+/* =========================================================
+   CONSTELAÇÃO — REFORMA VISUAL
+   Mantém os dados reais e a Massa Cognitiva.
+   ========================================================= */
+
+function inicializarConstelacao() {
+    const canvas = document.getElementById('constelacao-canvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const wrap = canvas.parentElement;
+
+    let W = 0;
+    let H = 0;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    const views = JSON.parse(localStorage.getItem('neuroNodeViews') || '{}');
+
+    const massaDoNo = n => {
+        const texto = `${n.titulo || ''} ${n.descricao || ''}`.trim().length;
+        const conexoes = obterConexoesDoNo(n.id).length;
+        const visualizacoes = Number(views[n.id] || 0);
+
+        return (
+            1 +
+            Math.min(10, texto / 180) +
+            conexoes * 1.6 +
+            Math.min(8, visualizacoes * 0.7)
+        );
+    };
+
+    let zoom = 1;
+    let offset = { x: 0, y: 0 };
+
+    const nodes = ANALOGIAS_NODES.map((n, i) => {
+        const massa = massaDoNo(n);
+
+        return {
+            n,
+            massa,
+            r: Math.min(24, 5 + Math.sqrt(massa) * 2.1),
+            x: W * (0.18 + ((n.x ?? (15 + (i * 17) % 70)) / 100) * 0.64),
+            y: H * (0.18 + ((n.y ?? (20 + (i * 29) % 60)) / 100) * 0.64),
+            vx: 0,
+            vy: 0,
+            drag: false
+        };
+    });
+
+    const nodeById = id => nodes.find(p => p.n.id === id);
+
+    let hover = null;
+    let dragNode = null;
+    let pan = false;
+    let last = { x: 0, y: 0 };
+    let moved = false;
+
+    function resize() {
+        const rect = wrap.getBoundingClientRect();
+
+        W = Math.max(320, rect.width);
+        H = Math.max(400, rect.height);
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        canvas.width = Math.floor(W * dpr);
+        canvas.height = Math.floor(H * dpr);
+        canvas.style.width = `${W}px`;
+        canvas.style.height = `${H}px`;
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function mundoParaTela(x, y) {
+        return {
+            x: (x - W / 2) * zoom + W / 2 + offset.x,
+            y: (y - H / 2) * zoom + H / 2 + offset.y
+        };
+    }
+
+    function telaParaMundo(x, y) {
+        return {
+            x: (x - W / 2 - offset.x) / zoom + W / 2,
+            y: (y - H / 2 - offset.y) / zoom + H / 2
+        };
+    }
+
+    function findNode(screenX, screenY) {
+        const pos = telaParaMundo(screenX, screenY);
+
+        return nodes
+            .slice()
+            .sort((a, b) => b.r - a.r)
+            .find(p => Math.hypot(p.x - pos.x, p.y - pos.y) < p.r + 15 / zoom);
+    }
+
+    function aumentarVisualizacao(n) {
+        views[n.id] = Number(views[n.id] || 0) + 1;
+        localStorage.setItem('neuroNodeViews', JSON.stringify(views));
+    }
+
+    function desenharFundo(t) {
+        const grad = ctx.createRadialGradient(
+            W * 0.5,
+            H * 0.46,
+            10,
+            W * 0.5,
+            H * 0.46,
+            Math.max(W, H) * 0.72
+        );
+
+        grad.addColorStop(0, 'rgba(30,64,175,.13)');
+        grad.addColorStop(0.42, 'rgba(15,23,42,.42)');
+        grad.addColorStop(1, '#030712');
+
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+
+        /* campo de estrelas */
+        for (let i = 0; i < 95; i++) {
+            const x = (i * 83.17) % W;
+            const y = (i * 47.31) % H;
+            const pulse = 0.35 + Math.sin(t * 0.0007 + i) * 0.2;
+
+            ctx.beginPath();
+            ctx.arc(x, y, i % 7 === 0 ? 1.15 : 0.55, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(147,197,253,${Math.max(.08, pulse)})`;
+            ctx.fill();
+        }
+
+        /* halo central */
+        const halo = ctx.createRadialGradient(
+            W / 2,
+            H / 2,
+            0,
+            W / 2,
+            H / 2,
+            Math.min(W, H) * 0.34
+        );
+
+        halo.addColorStop(0, 'rgba(59,130,246,.055)');
+        halo.addColorStop(1, 'rgba(59,130,246,0)');
+
+        ctx.fillStyle = halo;
+        ctx.fillRect(0, 0, W, H);
+    }
+
+    function atualizarFisica() {
+        if (!nodes.length) return;
+
+        for (let i = 0; i < nodes.length; i++) {
+            const a = nodes[i];
+
+            for (let j = i + 1; j < nodes.length; j++) {
+                const b = nodes[j];
+
+                const dx = b.x - a.x;
+                const dy = b.y - a.y;
+                const dist = Math.max(18, Math.hypot(dx, dy));
+                const nx = dx / dist;
+                const ny = dy / dist;
+
+                const distanciaIdeal =
+                    100 +
+                    Math.min(100, (a.massa + b.massa) * 4);
+
+                const forca =
+                    (distanciaIdeal - dist) * 0.0009;
+
+                if (!a.drag) {
+                    a.vx += nx * forca;
+                    a.vy += ny * forca;
+                }
+
+                if (!b.drag) {
+                    b.vx -= nx * forca;
+                    b.vy -= ny * forca;
+                }
+
+                /* repulsão */
+                if (dist < 170) {
+                    const repel =
+                        (170 - dist) / 170 * 0.045;
+
+                    if (!a.drag) {
+                        a.vx -= nx * repel;
+                        a.vy -= ny * repel;
+                    }
+
+                    if (!b.drag) {
+                        b.vx += nx * repel;
+                        b.vy += ny * repel;
+                    }
+                }
+            }
+        }
+
+        /* conexões funcionam como fios elásticos */
+        ANALOGIAS_CONNECTIONS.forEach(c => {
+            const a = nodeById(c.de);
+            const b = nodeById(c.para);
+
+            if (!a || !b) return;
+
+            const dx = b.x - a.x;
+            const dy = b.y - a.y;
+            const dist = Math.max(1, Math.hypot(dx, dy));
+            const nx = dx / dist;
+            const ny = dy / dist;
+
+            const target =
+                90 +
+                Math.min(90, (a.massa + b.massa) * 3.5);
+
+            const force = (dist - target) * 0.0015;
+
+            if (!a.drag) {
+                a.vx += nx * force * (1 + b.massa * 0.08);
+                a.vy += ny * force * (1 + b.massa * 0.08);
+            }
+
+            if (!b.drag) {
+                b.vx -= nx * force * (1 + a.massa * 0.08);
+                b.vy -= ny * force * (1 + a.massa * 0.08);
+            }
+        });
+
+        nodes.forEach(p => {
+            if (p.drag) return;
+
+            p.vx *= 0.985;
+            p.vy *= 0.985;
+
+            p.vx = Math.max(-0.75, Math.min(0.75, p.vx));
+            p.vy = Math.max(-0.75, Math.min(0.75, p.vy));
+
+            p.x += p.vx;
+            p.y += p.vy;
+
+            p.x = Math.max(30, Math.min(W - 30, p.x));
+            p.y = Math.max(30, Math.min(H - 30, p.y));
+        });
+    }
+
+    function desenharConexao(a, b, ativo, t) {
+        const A = mundoParaTela(a.x, a.y);
+        const B = mundoParaTela(b.x, b.y);
+
+        const dx = B.x - A.x;
+        const dy = B.y - A.y;
+        const dist = Math.max(1, Math.hypot(dx, dy));
+
+        const nx = -dy / dist;
+        const ny = dx / dist;
+
+        const curva =
+            Math.min(32, dist * 0.12) *
+            Math.sin((a.massa + b.massa) * 0.4);
+
+        const cx = (A.x + B.x) / 2 + nx * curva;
+        const cy = (A.y + B.y) / 2 + ny * curva;
+
+        ctx.beginPath();
+        ctx.moveTo(A.x, A.y);
+        ctx.quadraticCurveTo(cx, cy, B.x, B.y);
+
+        ctx.strokeStyle = ativo
+            ? 'rgba(125,211,252,.65)'
+            : 'rgba(96,165,250,.18)';
+
+        ctx.lineWidth = ativo
+            ? 1.8
+            : Math.min(2.4, 0.65 + (a.massa + b.massa) * 0.025);
+
+        ctx.shadowBlur = ativo ? 12 : 4;
+        ctx.shadowColor = 'rgba(59,130,246,.65)';
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        /* pequeno pulso percorrendo a conexão */
+        if (ativo) {
+            const progress = (t * 0.00008) % 1;
+
+            const px =
+                (1 - progress) * (1 - progress) * A.x +
+                2 * (1 - progress) * progress * cx +
+                progress * progress * B.x;
+
+            const py =
+                (1 - progress) * (1 - progress) * A.y +
+                2 * (1 - progress) * progress * cy +
+                progress * progress * B.y;
+
+            ctx.beginPath();
+            ctx.arc(px, py, 2.1, 0, Math.PI * 2);
+            ctx.fillStyle = '#bae6fd';
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = '#60a5fa';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+    }
+
+    function desenharNo(p, t) {
+        const pos = mundoParaTela(p.x, p.y);
+
+        const ativo = hover === p;
+        const pulsar =
+            1 +
+            Math.sin(t * 0.0018 + p.massa) * 0.035;
+
+        const raio =
+            (p.r + (ativo ? 3 : 0)) *
+            pulsar *
+            Math.max(0.8, Math.min(1.2, zoom));
+
+        /* aura */
+        const aura = ctx.createRadialGradient(
+            pos.x,
+            pos.y,
+            0,
+            pos.x,
+            pos.y,
+            raio * (ativo ? 5 : 3.5)
+        );
+
+        aura.addColorStop(
+            0,
+            ativo
+                ? 'rgba(147,197,253,.32)'
+                : 'rgba(96,165,250,.16)'
+        );
+        aura.addColorStop(1, 'rgba(59,130,246,0)');
+
+        ctx.fillStyle = aura;
+        ctx.beginPath();
+        ctx.arc(
+            pos.x,
+            pos.y,
+            raio * (ativo ? 5 : 3.5),
+            0,
+            Math.PI * 2
+        );
+        ctx.fill();
+
+        /* quatro pequenos pontos orbitais */
+        for (let i = 0; i < 4; i++) {
+            const ang =
+                t * 0.00025 +
+                i * Math.PI / 2 +
+                p.massa;
+
+            const ox = pos.x + Math.cos(ang) * raio * 1.75;
+            const oy = pos.y + Math.sin(ang) * raio * 1.75;
+
+            ctx.beginPath();
+            ctx.arc(ox, oy, ativo ? 1.5 : 0.9, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(147,197,253,.6)';
+            ctx.fill();
+        }
+
+        /* núcleo */
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, raio, 0, Math.PI * 2);
+
+        const nucleo = ctx.createRadialGradient(
+            pos.x - raio * .3,
+            pos.y - raio * .3,
+            1,
+            pos.x,
+            pos.y,
+            raio
+        );
+
+        nucleo.addColorStop(0, '#e0f2fe');
+        nucleo.addColorStop(.35, '#93c5fd');
+        nucleo.addColorStop(1, '#2563eb');
+
+        ctx.fillStyle = nucleo;
+        ctx.shadowBlur = ativo ? 30 : 13 + p.massa;
+        ctx.shadowColor = '#3b82f6';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        /* centro */
+        ctx.beginPath();
+        ctx.arc(
+            pos.x - raio * .28,
+            pos.y - raio * .28,
+            Math.max(1.2, raio * .22),
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fillStyle = '#f8fafc';
+        ctx.fill();
+
+        if (ativo || p.massa > 8) {
+            ctx.save();
+
+            ctx.font = '600 11px Inter, sans-serif';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#e0f2fe';
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = 'rgba(59,130,246,.7)';
+
+            const titulo = p.n.titulo || 'Pensamento';
+
+            ctx.fillText(
+                titulo,
+                pos.x + raio + 10,
+                pos.y - raio - 4
+            );
+
+            ctx.restore();
+        }
+    }
+
+    function desenharVazio() {
+        ctx.save();
+
+        ctx.textAlign = 'center';
+
+        ctx.fillStyle = 'rgba(148,163,184,.12)';
+        ctx.font = '600 42px Inter, sans-serif';
+        ctx.fillText('✦', W / 2, H / 2 - 30);
+
+        ctx.fillStyle = 'rgba(226,232,240,.72)';
+        ctx.font = '600 13px Inter, sans-serif';
+        ctx.fillText(
+            'Sua constelação ainda está vazia',
+            W / 2,
+            H / 2 + 12
+        );
+
+        ctx.fillStyle = 'rgba(148,163,184,.52)';
+        ctx.font = '400 10px Inter, sans-serif';
+        ctx.fillText(
+            'Os pensamentos aparecerão aqui quando forem registrados.',
+            W / 2,
+            H / 2 + 34
+        );
+
+        ctx.restore();
+    }
+
+    function render(t = 0) {
+        atualizarFisica();
+
+        ctx.clearRect(0, 0, W, H);
+        desenharFundo(t);
+
+        if (!nodes.length) {
+            desenharVazio();
+            requestAnimationFrame(render);
+            return;
+        }
+
+        ANALOGIAS_CONNECTIONS.forEach(c => {
+            const a = nodeById(c.de);
+            const b = nodeById(c.para);
+
+            if (!a || !b) return;
+
+            const ativo =
+                hover === a ||
+                hover === b;
+
+            desenharConexao(a, b, ativo, t);
+        });
+
+        nodes
+            .slice()
+            .sort((a, b) => a.massa - b.massa)
+            .forEach(p => desenharNo(p, t));
+
+        requestAnimationFrame(render);
+    }
+
+    canvas.onpointerdown = e => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const node = findNode(x, y);
+
+        moved = false;
+        last = { x: e.clientX, y: e.clientY };
+
+        if (node) {
+            dragNode = node;
+            node.drag = true;
+            aumentarVisualizacao(node.n);
+        } else {
+            pan = true;
+        }
+
+        canvas.classList.add('dragging');
+
+        try {
+            canvas.setPointerCapture(e.pointerId);
+        } catch (_) {}
+    };
+
+    canvas.onpointermove = e => {
+        const rect = canvas.getBoundingClientRect();
+
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        if (dragNode) {
+            const pos = telaParaMundo(x, y);
+
+            dragNode.x = pos.x;
+            dragNode.y = pos.y;
+            dragNode.vx = 0;
+            dragNode.vy = 0;
+
+            moved = true;
+            return;
+        }
+
+        if (pan) {
+            offset.x += e.clientX - last.x;
+            offset.y += e.clientY - last.y;
+
+            last = {
+                x: e.clientX,
+                y: e.clientY
+            };
+
+            moved = true;
+            return;
+        }
+
+        hover = findNode(x, y);
+
+        const tip = document.getElementById('constelacao-tooltip');
+
+        if (tip && hover) {
+            tip.style.display = 'block';
+
+            tip.style.left =
+                Math.min(x + 16, W - 190) + 'px';
+
+            tip.style.top =
+                Math.min(y + 16, H - 80) + 'px';
+
+            tip.innerHTML = `
+                <strong>${escHtml(hover.n.titulo)}</strong>
+                <span>
+                    ${tipoAnalogiaLabel(hover.n.tipo)}
+                    · massa ${hover.massa.toFixed(1)}
+                    · ${obterConexoesDoNo(hover.n.id).length}
+                    conexões
+                </span>
+            `;
+        } else if (tip) {
+            tip.style.display = 'none';
+        }
+    };
+
+    const release = e => {
+        if (dragNode) {
+            dragNode.drag = false;
+            dragNode = null;
+        }
+
+        pan = false;
+        canvas.classList.remove('dragging');
+
+        try {
+            canvas.releasePointerCapture(e.pointerId);
+        } catch (_) {}
+    };
+
+    canvas.onpointerup = release;
+    canvas.onpointercancel = release;
+
+    canvas.onpointerleave = () => {
+        if (!dragNode && !pan) {
+            hover = null;
+
+            const tip =
+                document.getElementById('constelacao-tooltip');
+
+            if (tip) tip.style.display = 'none';
+        }
+    };
+
+    canvas.onclick = e => {
+        if (moved) return;
+
+        const rect = canvas.getBoundingClientRect();
+
+        const node = findNode(
+            e.clientX - rect.left,
+            e.clientY - rect.top
+        );
+
+        if (!node || !node.n.pagina) return;
+
+        aumentarVisualizacao(node.n);
+
+        const btn =
+            document.querySelector(
+                `[data-page="${node.n.pagina}"]`
+            );
+
+        carregarPagina(node.n.pagina, btn);
+    };
+
+    canvas.onwheel = e => {
+        e.preventDefault();
+
+        const rect = canvas.getBoundingClientRect();
+
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const antes = telaParaMundo(mouseX, mouseY);
+
+        const fator = e.deltaY > 0 ? 0.9 : 1.1;
+
+        zoom = Math.max(
+            0.55,
+            Math.min(2.4, zoom * fator)
+        );
+
+        const depois = telaParaMundo(mouseX, mouseY);
+
+        offset.x += (depois.x - antes.x) * zoom;
+        offset.y += (depois.y - antes.y) * zoom;
+    };
+
+    constelacaoEstado = {
+        offset,
+        nodes,
+        get zoom() {
+            return zoom;
+        },
+        set zoom(valor) {
+            zoom = Math.max(.55, Math.min(2.4, valor));
+        }
+    };
+
+    resize();
+
+    if (constelacaoResizeObserver) {
+        constelacaoResizeObserver.disconnect();
+    }
+
+    constelacaoResizeObserver =
+        new ResizeObserver(resize);
+
+    constelacaoResizeObserver.observe(wrap);
+
+    requestAnimationFrame(render);
+}
+
+function recentralizarConstelacao() {
+    if (!constelacaoEstado) return;
+
+    constelacaoEstado.offset.x = 0;
+    constelacaoEstado.offset.y = 0;
+    constelacaoEstado.zoom = 1;
+}
+
+
+/* ============================================================
+   CONSTELAÇÃO — REDE REAL DE PENSAMENTOS
+   Usa apenas páginas que possuem conteúdo registrado.
+   ============================================================ */
+
+window.inicializarConstelacao = async function(){
+
+    const canvas = document.getElementById('constelacao-canvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const wrap = canvas.parentElement;
+
+    let W = 0;
+    let H = 0;
+    let animationFrame = null;
+    let hover = null;
+    let dragging = null;
+    let lastPointer = null;
+    let zoom = 1;
+    let tempo = 0;
+
+    const offset = { x: 0, y: 0 };
+
+    const views = JSON.parse(
+        localStorage.getItem('neuroNodeViews') || '{}'
+    );
+
+    /* ------------------------------------------------------------
+       Catálogo real das bibliotecas
+       ------------------------------------------------------------ */
+
+    const fontes = [
+        {
+            arquivo: 'esbocos.html',
+            seletor: '.esboco-card',
+            tipo: 'Esboço'
+        },
+        {
+            arquivo: 'obras.html',
+            seletor: '.obra-card',
+            tipo: 'Obra'
+        },
+        {
+            arquivo: 'personalidades.html',
+            seletor: '.personality-card',
+            tipo: 'Personalidade'
+        }
+    ];
+
+    const pensamentos = [];
+
+    function textoLimpo(el){
+        return (el?.textContent || '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function escaparHtml(texto){
+        return String(texto)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function possuiConteudoReal(doc){
+
+        if (doc.querySelector('.pensamento-vazio')) {
+            return false;
+        }
+
+        const corpo = doc.querySelector(
+            'main, .capitulo-content, .pagina-content, .content, body'
+        );
+
+        if (!corpo) return false;
+
+        const clone = corpo.cloneNode(true);
+
+        clone.querySelectorAll(
+            'script, style, nav, header, footer, .pensamento-vazio'
+        ).forEach(el => el.remove());
+
+        const texto = textoLimpo(clone);
+
+        if (!texto) return false;
+
+        const frasesVazias = [
+            'ainda não está feito',
+            'este pensamento ainda não possui conteúdo registrado no caderno',
+            'registro disponível para desenvolvimento e conexões'
+        ];
+
+        const textoMinusculo = texto.toLowerCase();
+
+        if (
+            frasesVazias.some(frase =>
+                textoMinusculo.includes(frase)
+            )
+        ) {
+            return false;
+        }
+
+        return texto.length > 80;
+    }
+
+    async function descobrirPensamentos(){
+
+        for (const fonte of fontes){
+
+            try {
+
+                const resposta = await fetch(fonte.arquivo);
+
+                if (!resposta.ok) continue;
+
+                const html = await resposta.text();
+
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(
+                    html,
+                    'text/html'
+                );
+
+                const cards = doc.querySelectorAll(
+                    fonte.seletor
+                );
+
+                for (const card of cards){
+
+                    const onclick =
+                        card.getAttribute('onclick') || '';
+
+                    const match =
+                        onclick.match(
+                            /carregarPagina\(['"]([^'"]+)['"]\)/
+                        );
+
+                    if (!match) continue;
+
+                    const id = match[1];
+
+                    const titulo =
+                        textoLimpo(
+                            card.querySelector('.card-title')
+                        ) || 'Pensamento';
+
+                    const descricao =
+                        textoLimpo(
+                            card.querySelector('.card-desc')
+                        );
+
+                    const meta =
+                        textoLimpo(
+                            card.querySelector('.card-meta')
+                        );
+
+                    try {
+
+                        const pagina =
+                            await fetch(id + '.html');
+
+                        if (!pagina.ok) continue;
+
+                        const paginaHtml =
+                            await pagina.text();
+
+                        const paginaDoc =
+                            parser.parseFromString(
+                                paginaHtml,
+                                'text/html'
+                            );
+
+                        if (
+                            !possuiConteudoReal(
+                                paginaDoc
+                            )
+                        ) {
+                            continue;
+                        }
+
+                        const corpo =
+                            paginaDoc.querySelector(
+                                'main, .capitulo-content, .pagina-content, .content, body'
+                            );
+
+                        const clone =
+                            corpo.cloneNode(true);
+
+                        clone.querySelectorAll(
+                            'script, style, nav, header, footer'
+                        ).forEach(el => el.remove());
+
+                        const texto =
+                            textoLimpo(clone);
+
+                        pensamentos.push({
+                            id,
+                            titulo,
+                            tipo: fonte.tipo,
+                            meta,
+                            descricao,
+                            texto,
+                            massa: 1
+                        });
+
+                    } catch (erroPagina) {
+                        console.warn(
+                            'Não foi possível ler:',
+                            id,
+                            erroPagina
+                        );
+                    }
+                }
+
+            } catch (erroFonte) {
+
+                console.warn(
+                    'Não foi possível carregar:',
+                    fonte.arquivo,
+                    erroFonte
+                );
+
+            }
+        }
+
+        /*
+         * Remove possíveis duplicados.
+         */
+        const unicos = [];
+
+        pensamentos.forEach(p => {
+            if (!unicos.some(x => x.id === p.id)) {
+                unicos.push(p);
+            }
+        });
+
+        return unicos;
+    }
+
+    /* ------------------------------------------------------------
+       Estado visual
+       ------------------------------------------------------------ */
+
+    function resize(){
+
+        const rect = wrap.getBoundingClientRect();
+
+        const dpr =
+            Math.min(window.devicePixelRatio || 1, 2);
+
+        W = Math.max(320, rect.width);
+        H = Math.max(420, rect.height);
+
+        canvas.width = W * dpr;
+        canvas.height = H * dpr;
+
+        canvas.style.width = W + 'px';
+        canvas.style.height = H + 'px';
+
+        ctx.setTransform(
+            dpr,
+            0,
+            0,
+            dpr,
+            0,
+            0
+        );
+    }
+
+    resize();
+
+    window.addEventListener(
+        'resize',
+        resize
+    );
+
+    /* ------------------------------------------------------------
+       Descobrir pensamentos reais
+       ------------------------------------------------------------ */
+
+    const pensamentosReais =
+        await descobrirPensamentos();
+
+    /* ------------------------------------------------------------
+       Conexões existentes
+       ------------------------------------------------------------ */
+
+    const conexoes =
+        Array.isArray(window.ANALOGIAS_CONNECTIONS)
+            ? window.ANALOGIAS_CONNECTIONS
+            : [];
+
+    function conexoesDoNo(id){
+
+        return conexoes.filter(c =>
+            c.de === id ||
+            c.para === id
+        );
+    }
+
+    function massaDoPensamento(p){
+
+        const tamanhoTexto =
+            Math.min(
+                10,
+                p.texto.length / 180
+            );
+
+        const qtdConexoes =
+            conexoesDoNo(p.id).length;
+
+        const visualizacoes =
+            Number(views[p.id] || 0);
+
+        return (
+            1 +
+            tamanhoTexto +
+            qtdConexoes * 1.6 +
+            Math.min(8, visualizacoes * 0.7)
+        );
+    }
+
+    /* ------------------------------------------------------------
+       Criar nós
+       ------------------------------------------------------------ */
+
+    const nodes =
+        pensamentosReais.map((p, index) => {
+
+            const angulo =
+                (Math.PI * 2 * index) /
+                Math.max(1, pensamentosReais.length);
+
+            const raioBase =
+                Math.min(W, H) *
+                (
+                    pensamentosReais.length === 1
+                        ? 0
+                        : 0.18 +
+                        (index % 3) * 0.12
+                );
+
+            const massa =
+                massaDoPensamento(p);
+
+            return {
+                ...p,
+                massa,
+                x:
+                    W / 2 +
+                    Math.cos(angulo) * raioBase,
+                y:
+                    H / 2 +
+                    Math.sin(angulo) * raioBase,
+                vx: 0,
+                vy: 0,
+                raio:
+                    5 +
+                    Math.min(7, massa * 0.55)
+            };
+        });
+
+    /* ------------------------------------------------------------
+       Se não houver pensamentos reais
+       ------------------------------------------------------------ */
+
+    const vazio =
+        document.querySelector(
+            '.constelacao-empty'
+        );
+
+    if (vazio) {
+        vazio.remove();
+    }
+
+    if (!nodes.length){
+
+        const estadoVazio =
+            document.createElement('div');
+
+        estadoVazio.className =
+            'constelacao-empty';
+
+        estadoVazio.innerHTML = `
+            <div class="constelacao-empty-star">✦</div>
+            <h2>Sua constelação ainda está vazia</h2>
+            <p>
+                Os pensamentos aparecerão aqui
+                quando forem registrados.
+            </p>
+        `;
+
+        wrap.appendChild(estadoVazio);
+
+    } else {
+
+        const existente =
+            wrap.querySelector(
+                '.constelacao-empty'
+            );
+
+        if (existente) {
+            existente.remove();
+        }
+    }
+
+    /* ------------------------------------------------------------
+       Campo estelar
+       ------------------------------------------------------------ */
+
+    const estrelas = [];
+
+    const quantidadeEstrelas =
+        Math.min(
+            180,
+            Math.max(
+                80,
+                Math.floor(
+                    (W * H) / 6500
+                )
+            )
+        );
+
+    for (
+        let i = 0;
+        i < quantidadeEstrelas;
+        i++
+    ){
+
+        estrelas.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            r: 0.3 + Math.random() * 1.3,
+            brilho:
+                0.25 +
+                Math.random() * 0.65,
+            fase:
+                Math.random() * Math.PI * 2
+        });
+    }
+
+    /* ------------------------------------------------------------
+       Fundo
+       ------------------------------------------------------------ */
+
+    function desenharFundo(){
+
+        ctx.clearRect(
+            0,
+            0,
+            W,
+            H
+        );
+
+        const grad =
+            ctx.createRadialGradient(
+                W / 2,
+                H / 2,
+                0,
+                W / 2,
+                H / 2,
+                Math.max(W, H) * 0.72
+            );
+
+        grad.addColorStop(
+            0,
+            'rgba(20, 55, 105, 0.28)'
+        );
+
+        grad.addColorStop(
+            0.5,
+            'rgba(5, 20, 48, 0.18)'
+        );
+
+        grad.addColorStop(
+            1,
+            'rgba(2, 7, 18, 0.95)'
+        );
+
+        ctx.fillStyle = grad;
+
+        ctx.fillRect(
+            0,
+            0,
+            W,
+            H
+        );
+
+        estrelas.forEach(e => {
+
+            const brilho =
+                e.brilho +
+                Math.sin(
+                    tempo * 0.001 +
+                    e.fase
+                ) * 0.18;
+
+            ctx.globalAlpha =
+                Math.max(
+                    0.05,
+                    brilho
+                );
+
+            ctx.beginPath();
+
+            ctx.arc(
+                e.x,
+                e.y,
+                e.r,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fillStyle =
+                'rgba(150,205,255,1)';
+
+            ctx.fill();
+        });
+
+        ctx.globalAlpha = 1;
+
+        /* halo central */
+
+        const halo =
+            ctx.createRadialGradient(
+                W / 2,
+                H / 2,
+                0,
+                W / 2,
+                H / 2,
+                Math.min(W, H) * 0.34
+            );
+
+        halo.addColorStop(
+            0,
+            'rgba(45,125,255,0.12)'
+        );
+
+        halo.addColorStop(
+            1,
+            'rgba(45,125,255,0)'
+        );
+
+        ctx.fillStyle = halo;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            W / 2,
+            H / 2,
+            Math.min(W, H) * 0.34,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+    }
+
+    /* ------------------------------------------------------------
+       Conexões
+       ------------------------------------------------------------ */
+
+    function desenharConexoes(){
+
+        conexoes.forEach(c => {
+
+            const a =
+                nodes.find(n =>
+                    n.id === c.de
+                );
+
+            const b =
+                nodes.find(n =>
+                    n.id === c.para
+                );
+
+            if (!a || !b) return;
+
+            const meioX =
+                (a.x + b.x) / 2;
+
+            const meioY =
+                (a.y + b.y) / 2;
+
+            const dx =
+                b.x - a.x;
+
+            const dy =
+                b.y - a.y;
+
+            const distancia =
+                Math.sqrt(
+                    dx * dx +
+                    dy * dy
+                ) || 1;
+
+            const curva =
+                Math.min(
+                    70,
+                    distancia * 0.18
+                );
+
+            const nx =
+                -dy / distancia;
+
+            const ny =
+                dx / distancia;
+
+            const cx =
+                meioX +
+                nx * curva;
+
+            const cy =
+                meioY +
+                ny * curva;
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                a.x,
+                a.y
+            );
+
+            ctx.quadraticCurveTo(
+                cx,
+                cy,
+                b.x,
+                b.y
+            );
+
+            ctx.strokeStyle =
+                'rgba(80,170,255,0.28)';
+
+            ctx.lineWidth = 1;
+
+            ctx.stroke();
+
+            /* pulso */
+
+            const t =
+                (
+                    tempo * 0.00025
+                ) % 1;
+
+            const px =
+                (1-t)*(1-t)*a.x +
+                2*(1-t)*t*cx +
+                t*t*b.x;
+
+            const py =
+                (1-t)*(1-t)*a.y +
+                2*(1-t)*t*cy +
+                t*t*b.y;
+
+            ctx.beginPath();
+
+            ctx.arc(
+                px,
+                py,
+                1.7,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fillStyle =
+                'rgba(120,210,255,0.75)';
+
+            ctx.fill();
+        });
+    }
+
+    /* ------------------------------------------------------------
+       Nós
+       ------------------------------------------------------------ */
+
+    function desenharNos(){
+
+        nodes.forEach(n => {
+
+            const ativo =
+                hover === n;
+
+            const pulsacao =
+                Math.sin(
+                    tempo * 0.002 +
+                    n.id.length
+                ) * 0.7;
+
+            const raio =
+                n.raio +
+                pulsacao;
+
+            /* aura */
+
+            const aura =
+                ctx.createRadialGradient(
+                    n.x,
+                    n.y,
+                    0,
+                    n.x,
+                    n.y,
+                    raio * 4
+                );
+
+            aura.addColorStop(
+                0,
+                ativo
+                    ? 'rgba(110,210,255,0.30)'
+                    : 'rgba(60,150,255,0.16)'
+            );
+
+            aura.addColorStop(
+                1,
+                'rgba(60,150,255,0)'
+            );
+
+            ctx.fillStyle = aura;
+
+            ctx.beginPath();
+
+            ctx.arc(
+                n.x,
+                n.y,
+                raio * 4,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+            /* pequenos pontos orbitais */
+
+            const orbit =
+                raio * 2.2;
+
+            for (
+                let i = 0;
+                i < 3;
+                i++
+            ){
+
+                const a =
+                    tempo * 0.0008 +
+                    i *
+                    (
+                        Math.PI * 2 / 3
+                    );
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    n.x +
+                    Math.cos(a) * orbit,
+                    n.y +
+                    Math.sin(a) * orbit,
+                    0.8,
+                    0,
+                    Math.PI * 2
+                );
+
+                ctx.fillStyle =
+                    'rgba(105,195,255,0.45)';
+
+                ctx.fill();
+            }
+
+            /* estrela central */
+
+            ctx.beginPath();
+
+            ctx.arc(
+                n.x,
+                n.y,
+                raio,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fillStyle =
+                ativo
+                    ? 'rgba(205,240,255,1)'
+                    : 'rgba(110,195,255,0.95)';
+
+            ctx.fill();
+
+            ctx.strokeStyle =
+                'rgba(190,235,255,0.85)';
+
+            ctx.lineWidth = 1;
+
+            ctx.stroke();
+
+        });
+    }
+
+    /* ------------------------------------------------------------
+       Física
+       ------------------------------------------------------------ */
+
+    function atualizarFisica(){
+
+        if (!nodes.length) return;
+
+        nodes.forEach(a => {
+
+            nodes.forEach(b => {
+
+                if (a === b) return;
+
+                const dx =
+                    a.x - b.x;
+
+                const dy =
+                    a.y - b.y;
+
+                const distancia =
+                    Math.sqrt(
+                        dx * dx +
+                        dy * dy
+                    ) || 1;
+
+                const distanciaMinima =
+                    90 +
+                    (
+                        a.massa +
+                        b.massa
+                    ) * 2;
+
+                if (
+                    distancia <
+                    distanciaMinima
+                ){
+
+                    const forca =
+                        (
+                            distanciaMinima -
+                            distancia
+                        ) *
+                        0.0025;
+
+                    a.vx +=
+                        (dx / distancia) *
+                        forca;
+
+                    a.vy +=
+                        (dy / distancia) *
+                        forca;
+                }
+            });
+
+            /* atração suave para o centro */
+
+            a.vx +=
+                (
+                    W / 2 -
+                    a.x
+                ) * 0.00018;
+
+            a.vy +=
+                (
+                    H / 2 -
+                    a.y
+                ) * 0.00018;
+
+            a.vx *= 0.985;
+            a.vy *= 0.985;
+
+            if (dragging !== a){
+
+                a.x += a.vx;
+                a.y += a.vy;
+            }
+
+            const margem = 35;
+
+            if (a.x < margem){
+                a.x = margem;
+                a.vx *= -0.4;
+            }
+
+            if (a.x > W - margem){
+                a.x = W - margem;
+                a.vx *= -0.4;
+            }
+
+            if (a.y < margem){
+                a.y = margem;
+                a.vy *= -0.4;
+            }
+
+            if (a.y > H - margem){
+                a.y = H - margem;
+                a.vy *= -0.4;
+            }
+        });
+    }
+
+    /* ------------------------------------------------------------
+       Coordenadas
+       ------------------------------------------------------------ */
+
+    function mundoParaTela(x, y){
+
+        return {
+            x:
+                (x - W / 2) *
+                zoom +
+                W / 2 +
+                offset.x,
+
+            y:
+                (y - H / 2) *
+                zoom +
+                H / 2 +
+                offset.y
+        };
+    }
+
+    function telaParaMundo(x, y){
+
+        return {
+            x:
+                (
+                    x -
+                    W / 2 -
+                    offset.x
+                ) / zoom +
+                W / 2,
+
+            y:
+                (
+                    y -
+                    H / 2 -
+                    offset.y
+                ) / zoom +
+                H / 2
+        };
+    }
+
+    function desenhar(){
+
+        tempo =
+            performance.now();
+
+        desenharFundo();
+
+        ctx.save();
+
+        ctx.translate(
+            W / 2,
+            H / 2
+        );
+
+        ctx.scale(
+            zoom,
+            zoom
+        );
+
+        ctx.translate(
+            -W / 2,
+            -H / 2
+        );
+
+        desenharConexoes();
+        desenharNos();
+
+        ctx.restore();
+
+        atualizarFisica();
+
+        animationFrame =
+            requestAnimationFrame(
+                desenhar
+            );
+    }
+
+    /* ------------------------------------------------------------
+       Tooltip
+       ------------------------------------------------------------ */
+
+    let tooltip =
+        wrap.querySelector(
+            '.constelacao-tooltip'
+        );
+
+    if (!tooltip){
+
+        tooltip =
+            document.createElement('div');
+
+        tooltip.className =
+            'constelacao-tooltip';
+
+        tooltip.hidden = true;
+
+        wrap.appendChild(
+            tooltip
+        );
+    }
+
+    function mostrarTooltip(n, x, y){
+
+        tooltip.hidden = false;
+
+        tooltip.innerHTML = `
+            <strong>${escaparHtml(n.titulo)}</strong>
+            <span>${escaparHtml(n.tipo)}</span>
+            ${
+                n.meta
+                    ? `<small>${escaparHtml(n.meta)}</small>`
+                    : ''
+            }
+        `;
+
+        const limiteX =
+            Math.max(
+                10,
+                W - 230
+            );
+
+        const limiteY =
+            Math.max(
+                10,
+                H - 100
+            );
+
+        tooltip.style.left =
+            Math.min(
+                limiteX,
+                Math.max(
+                    10,
+                    x + 14
+                )
+            ) + 'px';
+
+        tooltip.style.top =
+            Math.min(
+                limiteY,
+                Math.max(
+                    10,
+                    y + 14
+                )
+            ) + 'px';
+    }
+
+    function esconderTooltip(){
+
+        tooltip.hidden = true;
+    }
+
+    /* ------------------------------------------------------------
+       Interação
+       ------------------------------------------------------------ */
+
+    function encontrarNo(x, y){
+
+        const ponto =
+            telaParaMundo(x, y);
+
+        let encontrado = null;
+        let menor = Infinity;
+
+        nodes.forEach(n => {
+
+            const dx =
+                ponto.x - n.x;
+
+            const dy =
+                ponto.y - n.y;
+
+            const distancia =
+                Math.sqrt(
+                    dx * dx +
+                    dy * dy
+                );
+
+            const limite =
+                Math.max(
+                    14,
+                    n.raio * 2.5
+                );
+
+            if (
+                distancia < limite &&
+                distancia < menor
+            ){
+
+                menor = distancia;
+                encontrado = n;
+            }
+        });
+
+        return encontrado;
+    }
+
+    canvas.onpointerdown = e => {
+
+        const rect =
+            canvas.getBoundingClientRect();
+
+        const x =
+            e.clientX -
+            rect.left;
+
+        const y =
+            e.clientY -
+            rect.top;
+
+        const no =
+            encontrarNo(x, y);
+
+        if (no){
+
+            dragging = no;
+
+            canvas.setPointerCapture(
+                e.pointerId
+            );
+
+        } else {
+
+            dragging = 'campo';
+        }
+
+        lastPointer = {
+            x: e.clientX,
+            y: e.clientY
+        };
+    };
+
+    canvas.onpointermove = e => {
+
+        const rect =
+            canvas.getBoundingClientRect();
+
+        const x =
+            e.clientX -
+            rect.left;
+
+        const y =
+            e.clientY -
+            rect.top;
+
+        const no =
+            encontrarNo(x, y);
+
+        hover = no;
+
+        if (no){
+
+            canvas.style.cursor =
+                'pointer';
+
+            mostrarTooltip(
+                no,
+                x,
+                y
+            );
+
+        } else {
+
+            esconderTooltip();
+
+            canvas.style.cursor =
+                dragging
+                    ? 'grabbing'
+                    : 'grab';
+        }
+
+        if (
+            !dragging ||
+            !lastPointer
+        ) return;
+
+        const dx =
+            e.clientX -
+            lastPointer.x;
+
+        const dy =
+            e.clientY -
+            lastPointer.y;
+
+        if (dragging === 'campo'){
+
+            offset.x += dx;
+            offset.y += dy;
+
+        } else {
+
+            const movimento =
+                telaParaMundo(
+                    x,
+                    y
+                );
+
+            dragging.x =
+                movimento.x;
+
+            dragging.y =
+                movimento.y;
+
+            dragging.vx = 0;
+            dragging.vy = 0;
+        }
+
+        lastPointer = {
+            x: e.clientX,
+            y: e.clientY
+        };
+    };
+
+    canvas.onpointerup = e => {
+
+        dragging = null;
+        lastPointer = null;
+
+        try {
+            canvas.releasePointerCapture(
+                e.pointerId
+            );
+        } catch (_) {}
+    };
+
+    canvas.onpointerleave = () => {
+
+        hover = null;
+
+        esconderTooltip();
+
+        if (!dragging){
+            canvas.style.cursor =
+                'grab';
+        }
+    };
+
+    canvas.onclick = e => {
+
+        const rect =
+            canvas.getBoundingClientRect();
+
+        const x =
+            e.clientX -
+            rect.left;
+
+        const y =
+            e.clientY -
+            rect.top;
+
+        const no =
+            encontrarNo(x, y);
+
+        if (!no) return;
+
+        views[no.id] =
+            Number(views[no.id] || 0) + 1;
+
+        localStorage.setItem(
+            'neuroNodeViews',
+            JSON.stringify(views)
+        );
+
+        if (
+            typeof carregarPagina ===
+            'function'
+        ){
+
+            carregarPagina(
+                no.id
+            );
+        }
+    };
+
+    canvas.onwheel = e => {
+
+        e.preventDefault();
+
+        const fator =
+            e.deltaY < 0
+                ? 1.08
+                : 0.92;
+
+        zoom =
+            Math.max(
+                0.55,
+                Math.min(
+                    2.4,
+                    zoom * fator
+                )
+            );
+    };
+
+    /* ------------------------------------------------------------
+       Estado global
+       ------------------------------------------------------------ */
+
+    window.constelacaoEstado = {
+        offset,
+        nodes,
+        get zoom(){
+            return zoom;
+        },
+        set zoom(valor){
+            zoom =
+                Math.max(
+                    0.55,
+                    Math.min(
+                        2.4,
+                        valor
+                    )
+                );
+        }
+    };
+
+    desenhar();
+};
+
+
+/* ------------------------------------------------------------
+   RECENTRALIZAR
+   ------------------------------------------------------------ */
+
+window.recentralizarConstelacao = function(){
+
+    if (!window.constelacaoEstado)
+        return;
+
+    window.constelacaoEstado.offset.x = 0;
+    window.constelacaoEstado.offset.y = 0;
+    window.constelacaoEstado.zoom = 1;
+};
+
