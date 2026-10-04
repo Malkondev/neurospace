@@ -1,0 +1,60 @@
+<section class="neurofisiologia-page" data-neurofisiologia>
+<header class="nf-hero">
+  <div>
+    <span class="nf-kicker">NEUROSPACE · 11.0.2</span>
+    <h1>Neurofisiologia</h1>
+    <p>Conhecimento biológico em mecanismos, estruturas e circuitos, separado das reflexões pessoais — mas conectado a elas por Pontes Bio-Cognitivas.</p>
+  </div>
+  <div class="nf-core" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></div>
+</header>
+
+<nav class="nf-tabs">
+  <button class="nf-tab ativo" data-nf-tab="visao">Visão geral</button>
+  <button class="nf-tab" data-nf-tab="fichas">Fichas fisiológicas</button>
+  <button class="nf-tab" data-nf-tab="simuladores">Simuladores</button>
+  <button class="nf-tab" data-nf-tab="pontes">Pontes Bio-Cognitivas</button>
+</nav>
+
+<section class="nf-panel" data-nf-panel="visao">
+  <div class="nf-heading"><div><span class="nf-kicker">CONHECIMENTO</span><h2>Biologia como infraestrutura</h2></div><span class="nf-live">● SISTEMA BIOLÓGICO</span></div>
+  <div class="nf-overview">
+    <article><small>01</small><h3>Mecanismos</h3><p>Potenciais, transmissão, plasticidade, condução e outros processos fisiológicos.</p></article>
+    <article><small>02</small><h3>Estruturas & circuitos</h3><p>Regiões celulares, canais, vias e componentes envolvidos em cada mecanismo.</p></article>
+    <article><small>03</small><h3>Escala</h3><p>Molecular, celular, circuitos ou sistêmica, mantendo a escala explícita.</p></article>
+    <article class="bridge"><small>04</small><h3>Ponte Bio-Cognitiva</h3><p>A reflexão pessoal fica separada do fato biológico e aparece como relação.</p></article>
+  </div>
+  <div class="nf-principle"><span>REGRA DO MÓDULO</span><strong>Fato biológico ≠ interpretação pessoal.</strong><p>A ficha explica o mecanismo. A ponte registra o que esse mecanismo fez você pensar.</p></div>
+</section>
+
+<section class="nf-panel" data-nf-panel="fichas" hidden>
+  <div class="nf-heading"><div><span class="nf-kicker">BANCO FISIOLÓGICO</span><h2>Fichas biológicas</h2></div><button class="nf-action" data-nf-action="nova-ficha">+ Nova ficha</button></div>
+  <div id="nf-cards" class="nf-cards"></div>
+</section>
+
+<section class="nf-panel" data-nf-panel="simuladores" hidden>
+  <div class="nf-heading"><div><span class="nf-kicker">ANALOGIAS · FISIOLOGIA</span><h2>Simuladores de circuitos e sinapses</h2></div></div>
+  <div class="nf-sims">
+    <article class="nf-sim">
+      <header><div><small>01 · PROPAGAÇÃO</small><h3>Impulso elétrico</h3></div><button class="nf-action" data-nf-action="impulso">Disparar</button></header>
+      <div class="nf-track" id="nf-track"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="nf-scale"><span>nódulo</span><span>→ condução sequencial →</span><span>nódulo</span></div>
+      <p>Os nós acendem em sequência para representar visualmente a condução saltatória.</p>
+    </article>
+    <article class="nf-sim">
+      <header><div><small>02 · MEMBRANA</small><h3>Balanço eletroquímico</h3></div><button class="nf-action" data-nf-action="membrana">Simular</button></header>
+      <div class="nf-voltage"><div class="nf-axis"><span>-70 mV</span><span>-55 mV</span><span>+30 mV</span></div><div class="nf-graph"><b id="nf-curve"></b></div><div class="nf-axis"><span>repouso</span><span>limiar</span><span>pico</span></div></div>
+      <p>Uma animação percorre repouso → limiar → despolarização → retorno.</p>
+    </article>
+  </div>
+</section>
+
+<section class="nf-panel" data-nf-panel="pontes" hidden>
+  <div class="nf-heading"><div><span class="nf-kicker">BIOLOGIA → PENSAMENTO</span><h2>Pontes Bio-Cognitivas</h2></div></div>
+  <div id="nf-bridges" class="nf-bridges"></div>
+</section>
+
+<div id="nf-modal" class="nf-modal" hidden>
+  <div class="nf-backdrop" data-nf-action="fechar"></div>
+  <article class="nf-modal-card"><button class="nf-close" data-nf-action="fechar">×</button><div id="nf-modal-content"></div></article>
+</div>
+</section>

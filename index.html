@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroSpace v9.0.1 | Caderno de Estudos</title>
+    <title>NeuroSpace v11.0.2 | Caderno de Estudos</title>
     
     <!-- Tipografia Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -11,6 +11,7 @@
     <!-- Importação dos 6 Ficheiros CSS Modulares -->
     <link rel="stylesheet" href="style/style.css">
     <link rel="stylesheet" href="style/7-oroboros.css">
+<link rel="stylesheet" href="style/8-neurofisiologia.css">
 </head>
 <body>
 
@@ -21,7 +22,7 @@
             <!-- Logótipo -->
             <div class="logo-area">
                 <div class="brain-badge-small">🧠</div>
-                <span>NeuroSpace <small class="logo-version">v9.0.1</small></span>
+                <span>NeuroSpace <small class="logo-version">v11.0.2</small></span>
             </div>
 
             <!-- Alternador de Tema (Dark / Light) -->
@@ -44,7 +45,9 @@
                     <span>Início</span>
                 </button>
 
-                <button class="nav-btn" data-page="esbocos" onclick="carregarPagina('esbocos', this)">
+                <button class="nav-btn nf-sidebar-link" data-page="neurofisiologia" onclick="carregarPagina('neurofisiologia', this)">
+<svg class="node-icon" viewBox="0 0 24 24"><path d="M9 4.5a3 3 0 0 0-5.5 1.6A3.5 3.5 0 0 0 5 12a3.5 3.5 0 0 0-1.5 5.9A3 3 0 0 0 9 19.5a3 3 0 0 0 6 0 3 3 0 0 0 5.5-1.6A3.5 3.5 0 0 0 19 12a3.5 3.5 0 0 0 1.5-5.9A3 3 0 0 0 15 4.5a3 3 0 0 0-6 0Z"></path></svg><span>Neurofisiologia</span></button>
+<button class="nav-btn" data-page="esbocos" onclick="carregarPagina('esbocos', this)">
                     <svg class="node-icon" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg> 
                     <span>Esboços</span>
                 </button>
